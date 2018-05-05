@@ -1,0 +1,24 @@
+<Testprogram name="RavenRevA">
+  <TestRef name="RavenTests">
+    <TestFlow name="Gpio18_PinCont">
+      <Test delay="2e-3" force="100e-6" hilim="1.5" lolim="200e-3" name="Gpio18_Opens" pinref="GpioPins" testtype="BASIC"/>
+      <Test delay="2e-3" force="100e-6" hilim="1.5" lolim="200e-3" name="Gpio18_Shorts" pinref="JtagPins" testtype="BASIC"/>
+    </TestFlow>
+  </TestRef>
+  <PinRef name="RavenPins">
+    <PinGroup name="GpioPins" pintype="IO">
+      <Pin name="PWROK"/>
+      <Pin name="RST_L"/>
+    </PinGroup>
+    <PinGroup name="JtagPins" pintype="IO">
+      <Pin name="TCK"/>
+      <Pin name="TMS"/>
+    </PinGroup>
+    <Pins name="AllPins">
+      <Pin channel="0x0000" name="PWROK" pintype="IO"/>
+      <Pin channel="0x0001" name="RST_L" pintype="IO"/>
+      <Pin channel="0x0002" name="TCK" pintype="IO"/>
+      <Pin channel="0x0003" name="TMS" pintype="IO"/>
+    </Pins>
+  </PinRef>
+</Testprogram>
