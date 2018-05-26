@@ -51,7 +51,6 @@ class FrontController(object):
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
-        flowrunner.executeAll()
-#         raw = flowrunner.executeAll()
-#         print(etree.tostring(raw))
+        testResults = flowrunner.executeAll()
+        print(testResults)
         

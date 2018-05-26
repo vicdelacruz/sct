@@ -28,11 +28,13 @@ class FlowRunner():
         print('executeAll: ', etree.tostring(self.tp.programtree))
         print('tests: ', self.tests)
         print('pingroups: ', self.pingroups)
+        testResults = {}
         for test in self.tests.keys():
             testResult = self.executeSingle(test)
-            print(etree.tostring(testResult))
+            testResults[test] = etree.tostring(testResult)
+#             print(etree.tostring(testResult))
 #                 etree.SubElement(element.getparent(), element.tag, testResult.getroot())
-#         return self.tp
+        return testResults
     
     def extractTests(self):
         print('executeAll: ', etree.tostring(self.tp.programtree))
