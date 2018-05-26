@@ -22,24 +22,26 @@ class FrontController(object):
         '''
         self.tp = Tp()
         self.mainView = mainView
-        self.result = None
+        self.results = None
         print('Front is initialized...')
         
-    def monitor(self, cmdPath=None):
+    def monitor(self, cmdPath=None, logDir = None):
         while True:
             if os.path.exists(cmdPath):
                 print('Front is loading CMD file...')
                 fh = FileHandler()
-                self.processCmds(fh.loadCmd(cmdPath))
+                self.processCmds(fh.loadCmd(cmdPath), logDir)
             time.sleep(10)
         
-    def processCmds(self, cmds):
+    def processCmds(self, cmds, logDir):
         for cmd in cmds:
             op = cmd.split()
             if op[0] == 'LOAD':
                 self.load(op[1])
             elif op[0] == 'EXECUTE_ALL':
                 self.executeAll()
+            elif op[0] == 'LOG_ALL':
+                self.logAll(logDir, op[1])
             else:
                 pass
         
@@ -51,6 +53,13 @@ class FrontController(object):
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
-        testResults = flowrunner.executeAll()
-        print(testResults)
+        self.results = flowrunner.executeAll()
+#         print('All results...')
+#         print(self.results)
+        
+    def logAll(self, logDir=None, logFile=None):
+#         print('Logging all...')
+#         print(self.results)
+        fh = FileHandler()
+        fh.logResults(os.path.join(logDir,logFile), self.results)
         

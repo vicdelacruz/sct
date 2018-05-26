@@ -10,4 +10,4 @@ if __name__ == '__main__':
     app = FrontController()
 #     app.load(props.tpPath)
 #     app.executeAll()
-    app.monitor(props.cmdPath)
+    app.monitor(props.cmdPath, props.logDir)

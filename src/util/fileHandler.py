@@ -44,7 +44,17 @@ class FileHandler:
         except:
             pass
         return cmds
-
+    
+    def logResults(self, logPath=None, results=None):
+        try:
+            with open(logPath, 'w') as f:
+                f.writelines('{}:{}\n'.format(k,v) for k, v in results.items())
+            for k, v in results.items():
+                print('{}:{}\n'.format(k,v))
+        except:
+            print('Unable to log to file...')
+            print('...', logPath, '...')
+            print('...', results, '...')
             
     def parseTp(self, fullpath):
         tp = Tp()
