@@ -101,3 +101,10 @@ ENV/
 .mypy_cache/
 
 .settings/
+
+# Mac
+.DS_Store
+
+# Eclipse
+.project
+.pydevproject
