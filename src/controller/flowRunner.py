@@ -5,7 +5,6 @@ Created on 5 May 2018
 '''
 from lxml import etree
 from instrument.pmu import Pmu
-from instrument.tests import Tests
 
 class FlowRunner():
     '''

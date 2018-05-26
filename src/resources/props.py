@@ -1,1 +1,2 @@
-tpPath = '/Users/BIKOYPOGI/eclipse-workspace/sct/src/repo/Testprogram.xml'
+tpPath = 'src/repo/Testprogram.xml'
+cmdPath = 'src/repo/Sct.cmd'

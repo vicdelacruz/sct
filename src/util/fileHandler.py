@@ -5,7 +5,7 @@ Created on 9 Apr 2018
 '''
 from model.tp import Tp
 from lxml import etree
-
+import os
 
 class FileHandler:
     '''
@@ -16,25 +16,43 @@ class FileHandler:
     '''
 
 
-    def __init__(self, fullpath = None):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.fullpath = fullpath
-        self.tp = Tp()
         print('FileHandler is initialized...')
 
                 
-    def load(self):
-        self.parse(self.fullpath)
-        print(etree.tostring(self.tp.programtree))
-        return self.tp
+    def loadCmd(self, cmdPath=None):
+        cmds = self.parseCmd(cmdPath)
+        return cmds
+
+    
+    def loadTp(self, tpPath=None):
+        tp = self.parseTp(tpPath)
+        print(etree.tostring(tp.programtree))
+        return tp
+    
+    def parseCmd(self, fullpath):
+        cmds = []
+        try:
+            lines = open(fullpath).readlines()
+            for i, cmd in enumerate(lines):
+                cmds.append(cmd.strip())
+#             print(cmds)
+            os.remove(fullpath)
+        except:
+            pass
+        return cmds
+
             
-    def parse(self, fullpath):
+    def parseTp(self, fullpath):
+        tp = Tp()
         parsed = etree.parse(fullpath)
         print(parsed.getroot().tag)
         if (parsed.getroot().tag == 'Testprogram'):
-            self.tp.programtree = parsed
+            tp.programtree = parsed
             print(etree.tostring(parsed))
+        return tp
         
         
