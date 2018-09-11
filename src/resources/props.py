@@ -1,3 +1,3 @@
-tpPath = 'src/repo/Testprogram.xml'
-cmdPath = 'src/repo/Sct.cmd'
-logDir = 'src/repo/logs'
+tpPath = 'repo/Testprogram.xml'
+cmdPath = 'repo/Sct.cmd'
+logDir = 'repo/logs'

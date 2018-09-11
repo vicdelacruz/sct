@@ -27,6 +27,7 @@ class FrontController(object):
         
     def monitor(self, cmdPath=None, logDir = None):
         while True:
+            print('Polling for CMD file in ', os.getcwd(), cmdPath)
             if os.path.exists(cmdPath):
                 print('Front is loading CMD file...')
                 fh = FileHandler()
@@ -60,6 +61,9 @@ class FrontController(object):
     def logAll(self, logDir=None, logFile=None):
 #         print('Logging all...')
 #         print(self.results)
+        if not os.path.exists(logDir):
+            os.makedirs(logDir)
         fh = FileHandler()
         fh.logResults(os.path.join(logDir,logFile), self.results)
+        print('Front finished logging the results...')
         
