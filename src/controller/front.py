@@ -27,7 +27,7 @@ class FrontController(object):
         
     def monitor(self, cmdPath=None, logDir = None):
         while True:
-            print('Polling for CMD file in ', os.getcwd(), cmdPath)
+            print("Polling for CMD file in %s%s%s" % (os.getcwd(), os.path.sep, cmdPath))
             if os.path.exists(cmdPath):
                 print('Front is loading CMD file...')
                 fh = FileHandler()

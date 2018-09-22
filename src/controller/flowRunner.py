@@ -5,6 +5,7 @@ Created on 5 May 2018
 '''
 from lxml import etree
 from instrument.pmu import Pmu
+from spi.spiDriver import Driver
 
 class FlowRunner():
     '''
@@ -34,6 +35,7 @@ class FlowRunner():
             testResults[test] = etree.tostring(testResult)
 #             print(etree.tostring(testResult))
 #                 etree.SubElement(element.getparent(), element.tag, testResult.getroot())
+        self.testSpi()
         return testResults
     
     def extractTests(self):
@@ -62,3 +64,8 @@ class FlowRunner():
         singleResult = etree.ElementTree(pmu.get())
 #         print(etree.tostring(singleResult))
         return singleResult
+
+    def testSpi(self):
+        driver = Driver()
+        driver.xfer(0x0, 0b01011010)
+        driver.xfer2(0x0, 0b11110000)

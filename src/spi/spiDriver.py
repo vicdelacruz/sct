@@ -4,7 +4,7 @@ Created on 22 Sep 2018
 @author: BIKOYPOGI
 '''
 import spidev
-import spiConfig
+from spi import spiConfig
 
 class Driver:
     '''
@@ -33,12 +33,12 @@ class Driver:
         spi.max_speed_hz = spiConfig.maxSpeedHz
         spi.mode = spiConfig.mode
         '''
-        print(spiConfig.bitsPerWord)
-        print(spiConfig.csHigh)
-        print(spiConfig.loop)
-        print(spiConfig.lsbFirst)
-        print(spiConfig.maxSpeedHz)
-        print(spiConfig.mode)
+        print("spi bitsPerWord = %s" % spiConfig.bitsPerWord)
+        print("spi csHigh      = %s"      % spiConfig.csHigh)
+        print("spi loop        = %s"        % spiConfig.loop)
+        print("spi lsbFirst    = %s"    % spiConfig.lsbFirst)
+        print("spi maxSpeedHz  = %s"  % spiConfig.maxSpeedHz)
+        print("spi mode        = %s"        % spiConfig.mode)
 
     def setCfg(self, attr, value):
         if not hasattr(self, attr):
@@ -56,13 +56,13 @@ class Driver:
         self.open(addr)
         self.spi.xfer(self.sanitize(data))
         self.close()
-        print("Data 0x%x sent to 0x%x" % (data, addr))
+        print("SPI has sent data 0x%x to address 0x%x" % (data, addr))
 
     def xfer2(self, addr, data):
         self.open(addr)
         self.spi.xfer2(self.sanitize(data))
         self.close()
-        print("Data 0x%x sent to 0x%x" % (data, addr))
+        print("SPI has sent data 0x%x to address 0x%x" % (data, addr))
 
     def sanitize(self, data):
         if isinstance(data, list):
