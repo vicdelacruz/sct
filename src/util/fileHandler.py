@@ -4,6 +4,7 @@ Created on 9 Apr 2018
 @author: BIKOYPOGI
 '''
 from model.tp import Tp
+from logger.sctLogger import SctLogger
 from lxml import etree
 import os
 
@@ -14,13 +15,13 @@ class FileHandler:
     Attributes:
         filepath   Directory and filename in dirPath/fileName.ext format
     '''
-
+    logger = SctLogger(__name__).logger
 
     def __init__(self):
         '''
         Constructor
         '''
-        print('FileHandler is initialized...')
+        self.logger.info('FileHandler is initialized...')
 
                 
     def loadCmd(self, cmdPath=None):
@@ -30,7 +31,7 @@ class FileHandler:
     
     def loadTp(self, tpPath=None):
         tp = self.parseTp(tpPath)
-        print(etree.tostring(tp.programtree))
+        self.logger.info(etree.tostring(tp.programtree))
         return tp
     
     def parseCmd(self, fullpath):
@@ -39,7 +40,7 @@ class FileHandler:
             lines = open(fullpath).readlines()
             for i, cmd in enumerate(lines):
                 cmds.append(cmd.strip())
-#             print(cmds)
+#             self.logger.info(cmds)
             os.remove(fullpath)
         except:
             pass
@@ -50,19 +51,19 @@ class FileHandler:
             with open(logPath, 'w') as f:
                 f.writelines('{}:{}\n'.format(k,v) for k, v in results.items())
             for k, v in results.items():
-                print('{}:{}\n'.format(k,v))
+                self.logger.info('{}:{}\n'.format(k,v))
         except:
-            print('Unable to log to file...')
-            print('...', logPath, '...')
-            print('...', results, '...')
+            self.logger.info('Unable to log to file...')
+            self.logger.info('...', logPath, '...')
+            self.logger.info('...', results, '...')
             
     def parseTp(self, fullpath):
         tp = Tp()
         parsed = etree.parse(fullpath)
-        print(parsed.getroot().tag)
+        self.logger.info(parsed.getroot().tag)
         if (parsed.getroot().tag == 'Testprogram'):
             tp.programtree = parsed
-            print(etree.tostring(parsed))
+            self.logger.info(etree.tostring(parsed))
         return tp
         
         

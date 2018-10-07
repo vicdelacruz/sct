@@ -6,6 +6,7 @@ Created on 5 May 2018
 from util.fileHandler import FileHandler
 from model.tp import Tp
 from controller.flowRunner import FlowRunner
+from logger.sctLogger import SctLogger
 from lxml import etree
 import os
 import time
@@ -14,7 +15,7 @@ class FrontController(object):
     '''
     classdocs
     '''
-    
+    logger = SctLogger(__name__).logger
 
     def __init__(self, mainView = None):
         '''
@@ -23,13 +24,13 @@ class FrontController(object):
         self.tp = Tp()
         self.mainView = mainView
         self.results = None
-        print('Front is initialized...')
+        self.logger.info('Front is initialized...')
         
     def monitor(self, cmdPath=None, logDir = None):
         while True:
-            print("Polling for CMD file in %s%s%s" % (os.getcwd(), os.path.sep, cmdPath))
+            self.logger.info("Polling for CMD file in %s%s%s" % (os.getcwd(), os.path.sep, cmdPath))
             if os.path.exists(cmdPath):
-                print('Front is loading CMD file...')
+                self.logger.info('Front is loading CMD file...')
                 fh = FileHandler()
                 self.processCmds(fh.loadCmd(cmdPath), logDir)
             time.sleep(10)
@@ -47,23 +48,23 @@ class FrontController(object):
                 pass
         
     def load(self, tpPath=None):
-        print('Front is loading TP...')
+        self.logger.info('Front is loading TP...')
         fh = FileHandler()
         self.tp = fh.loadTp(tpPath)
-        print(etree.tostring(self.tp.programtree))
+        self.logger.info(etree.tostring(self.tp.programtree))
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
         self.results = flowrunner.executeAll()
-#         print('All results...')
-#         print(self.results)
+#         self.logger.info('All results...')
+#         self.logger.info(self.results)
         
     def logAll(self, logDir=None, logFile=None):
-#         print('Logging all...')
-#         print(self.results)
+#         self.logger.info('Logging all...')
+#         self.logger.info(self.results)
         if not os.path.exists(logDir):
             os.makedirs(logDir)
         fh = FileHandler()
         fh.logResults(os.path.join(logDir,logFile), self.results)
-        print('Front finished logging the results...')
+        self.logger.info('Front finished logging the results...')
         

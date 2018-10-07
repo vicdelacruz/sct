@@ -6,42 +6,43 @@ Created on 5 May 2018
 from lxml import etree
 from instrument.pmu import Pmu
 from spi.spiDriver import Driver
+from logger.sctLogger import SctLogger
 
 class FlowRunner():
     '''
     classdocs
     '''
-
+    logger = SctLogger(__name__).logger
 
     def __init__(self, tp):
         '''
         Constructor
         '''
         self.tp = tp
-        print('FlowRunner is initialized with Tp:', tp)
-        print(etree.tostring(self.tp.programtree))
+        self.logger.info('FlowRunner is initialized with Tp:', tp)
+        self.logger.info(etree.tostring(self.tp.programtree))
         self.tests = {}
         self.pingroups = {}
         self.extractTests()
 
         
     def executeAll(self):
-        print('executeAll: ', etree.tostring(self.tp.programtree))
-        print('tests: ', self.tests)
-        print('pingroups: ', self.pingroups)
+        self.logger.info('executeAll: ', etree.tostring(self.tp.programtree))
+        self.logger.info('tests: ', self.tests)
+        self.logger.info('pingroups: ', self.pingroups)
         testResults = {}
         for test in self.tests.keys():
             testResult = self.executeSingle(test)
             testResults[test] = etree.tostring(testResult)
-#             print(etree.tostring(testResult))
+#             self.logger.info(etree.tostring(testResult))
 #                 etree.SubElement(element.getparent(), element.tag, testResult.getroot())
         self.testSpi()
         return testResults
     
     def extractTests(self):
-        print('executeAll: ', etree.tostring(self.tp.programtree))
+        self.logger.info('executeAll: ', etree.tostring(self.tp.programtree))
         for element in self.tp.programtree.iter():
-            print(element.tag, ' : ', element.get('name'))
+            self.logger.info(element.tag, ' : ', element.get('name'))
             if (element.tag == 'Test'):
 #                 testResult = self.executeSingle(element)
 #                 etree.SubElement(element.getparent(), element.tag, testResult.getroot())
@@ -55,14 +56,14 @@ class FlowRunner():
         
     def executeSingle(self, singleTest):
         params = self.tests.get(singleTest).get('params')
-        print(etree.tostring(params))
+        self.logger.info(etree.tostring(params))
         pinref = params.get('pinref')
-        print(pinref)
+        self.logger.info(pinref)
         pins = self.pingroups.get(pinref).get('pins')
-        print(pins)
+        self.logger.info(pins)
         pmu = Pmu(singleTest, pins)
         singleResult = etree.ElementTree(pmu.get())
-#         print(etree.tostring(singleResult))
+#         self.logger.info(etree.tostring(singleResult))
         return singleResult
 
     def testSpi(self):

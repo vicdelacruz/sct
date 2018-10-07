@@ -5,6 +5,7 @@ Created on 8 Apr 2018
 '''
 from time import sleep
 from lxml import etree
+from logger.sctLogger import SctLogger
 
 class Pmu:
     '''
@@ -14,6 +15,7 @@ class Pmu:
         testref    The name of the TestRef that needs the measurement
         result     Result of this Pmu measurement (in V)
     '''
+    logger = SctLogger(__name__).logger
 
     def __init__(self, test, pins):
         '''
@@ -25,7 +27,7 @@ class Pmu:
         
     def get(self):
         for pin in self.pins:
-            print(pin)
+            self.logger.info(pin)
             sleep(1)
             self.getMeas(pin)
         return self.meas

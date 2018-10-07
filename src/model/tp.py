@@ -5,12 +5,13 @@ Created on 19 Apr 2018
 '''
 
 from lxml import etree
+from logger.sctLogger import SctLogger
 
 class Tp:
     '''
     Holds the whole testprogram
     '''
-
+    logger = SctLogger(__name__).logger
 
     def __init__(self):
         '''
@@ -18,4 +19,4 @@ class Tp:
         '''
         self.programtree = etree.ElementTree()
         self.resulttree = etree.ElementTree()
-        print('Tp is initialized...')
+        self.logger.info('Tp is initialized...')

@@ -5,6 +5,7 @@ Created on 22 Sep 2018
 '''
 import spidev
 from spi import spiConfig
+from logger.sctLogger import SctLogger
 
 class Driver:
     '''
@@ -14,6 +15,7 @@ class Driver:
         addr       The SCT address of the device to write to 
         data       The payload data
     '''
+    logger = SctLogger(__name__).logger
 
     def __init__(self):
         '''
@@ -33,12 +35,12 @@ class Driver:
         spi.max_speed_hz = spiConfig.maxSpeedHz
         spi.mode = spiConfig.mode
         '''
-        print("spi bitsPerWord = %s" % spiConfig.bitsPerWord)
-        print("spi csHigh      = %s"      % spiConfig.csHigh)
-        print("spi loop        = %s"        % spiConfig.loop)
-        print("spi lsbFirst    = %s"    % spiConfig.lsbFirst)
-        print("spi maxSpeedHz  = %s"  % spiConfig.maxSpeedHz)
-        print("spi mode        = %s"        % spiConfig.mode)
+        self.logger.info("spi bitsPerWord = %s" % spiConfig.bitsPerWord)
+        self.logger.info("spi csHigh      = %s"      % spiConfig.csHigh)
+        self.logger.info("spi loop        = %s"        % spiConfig.loop)
+        self.logger.info("spi lsbFirst    = %s"    % spiConfig.lsbFirst)
+        self.logger.info("spi maxSpeedHz  = %s"  % spiConfig.maxSpeedHz)
+        self.logger.info("spi mode        = %s"        % spiConfig.mode)
 
     def setCfg(self, attr, value):
         if not hasattr(self, attr):
@@ -56,13 +58,13 @@ class Driver:
         self.open(addr)
         self.spi.xfer(self.sanitize(data))
         self.close()
-        print("SPI has sent data 0x%x to address 0x%x" % (data, addr))
+        self.logger.info("SPI has sent data 0x%x to address 0x%x" % (data, addr))
 
     def xfer2(self, addr, data):
         self.open(addr)
         self.spi.xfer2(self.sanitize(data))
         self.close()
-        print("SPI has sent data 0x%x to address 0x%x" % (data, addr))
+        self.logger.info("SPI has sent data 0x%x to address 0x%x" % (data, addr))
 
     def sanitize(self, data):
         if isinstance(data, list):
