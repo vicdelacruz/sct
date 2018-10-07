@@ -12,6 +12,6 @@ setup(name='sct',
           'https://github.com/vicdelacruz/sct.git'
       ],
       install_requires=[
-          'lxml',
+          'lxml','spidev'
       ],
       zip_safe=False)
