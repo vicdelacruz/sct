@@ -15,7 +15,7 @@ class FrontController(object):
     '''
     classdocs
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self, mainView = None):
         '''
@@ -27,8 +27,9 @@ class FrontController(object):
         self.logger.info('Front is initialized...')
         
     def monitor(self, cmdPath=None, logDir = None):
+        
         while True:
-            self.logger.info("Polling for CMD file in %s%s%s" % (os.getcwd(), os.path.sep, cmdPath))
+            self.logger.info("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
             if os.path.exists(cmdPath):
                 self.logger.info('Front is loading CMD file...')
                 fh = FileHandler()
@@ -66,5 +67,5 @@ class FrontController(object):
             os.makedirs(logDir)
         fh = FileHandler()
         fh.logResults(os.path.join(logDir,logFile), self.results)
-        self.logger.info('Front finished logging the results...')
+        self.logger.info('Front finished logging the results...')   
         

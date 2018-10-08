@@ -12,14 +12,14 @@ class FlowRunner():
     '''
     classdocs
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self, tp):
         '''
         Constructor
         '''
         self.tp = tp
-        self.logger.info('FlowRunner is initialized with Tp:', tp)
+        self.logger.info('FlowRunner is initialized with Tp: %s', tp.programtree.getroot().get('name'))
         self.logger.info(etree.tostring(self.tp.programtree))
         self.tests = {}
         self.pingroups = {}
@@ -27,9 +27,9 @@ class FlowRunner():
 
         
     def executeAll(self):
-        self.logger.info('executeAll: ', etree.tostring(self.tp.programtree))
-        self.logger.info('tests: ', self.tests)
-        self.logger.info('pingroups: ', self.pingroups)
+        self.logger.info('executeAll: %s', etree.tostring(self.tp.programtree))
+        self.logger.info('tests: %s', self.tests)
+        self.logger.info('pingroups: %s', self.pingroups)
         testResults = {}
         for test in self.tests.keys():
             testResult = self.executeSingle(test)
@@ -40,9 +40,9 @@ class FlowRunner():
         return testResults
     
     def extractTests(self):
-        self.logger.info('executeAll: ', etree.tostring(self.tp.programtree))
+        self.logger.info('executeAll: %s', etree.tostring(self.tp.programtree))
         for element in self.tp.programtree.iter():
-            self.logger.info(element.tag, ' : ', element.get('name'))
+            self.logger.info('%s : %s',element.tag, element.get('name'))
             if (element.tag == 'Test'):
 #                 testResult = self.executeSingle(element)
 #                 etree.SubElement(element.getparent(), element.tag, testResult.getroot())

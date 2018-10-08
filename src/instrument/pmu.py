@@ -15,7 +15,7 @@ class Pmu:
         testref    The name of the TestRef that needs the measurement
         result     Result of this Pmu measurement (in V)
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self, test, pins):
         '''

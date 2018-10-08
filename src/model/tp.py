@@ -11,7 +11,7 @@ class Tp:
     '''
     Holds the whole testprogram
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self):
         '''

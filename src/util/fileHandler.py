@@ -15,7 +15,7 @@ class FileHandler:
     Attributes:
         filepath   Directory and filename in dirPath/fileName.ext format
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self):
         '''
@@ -51,11 +51,11 @@ class FileHandler:
             with open(logPath, 'w') as f:
                 f.writelines('{}:{}\n'.format(k,v) for k, v in results.items())
             for k, v in results.items():
-                self.logger.info('{}:{}\n'.format(k,v))
+                self.logger.info('{}:{}'.format(k,v))
         except:
             self.logger.info('Unable to log to file...')
-            self.logger.info('...', logPath, '...')
-            self.logger.info('...', results, '...')
+            self.logger.info('...%s%s', logPath, '...')
+            self.logger.info('...%s%s', results, '...')
             
     def parseTp(self, fullpath):
         tp = Tp()
@@ -65,5 +65,3 @@ class FileHandler:
             tp.programtree = parsed
             self.logger.info(etree.tostring(parsed))
         return tp
-        
-        
