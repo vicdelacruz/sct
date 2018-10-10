@@ -24,14 +24,14 @@ class FrontController(object):
         self.tp = Tp()
         self.mainView = mainView
         self.results = None
-        self.logger.info('Front is initialized...')
+        self.logger.debug('Front is initialized...')
         
     def monitor(self, cmdPath=None, logDir = None):
         
         while True:
-            self.logger.info("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
+            self.logger.debug("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
             if os.path.exists(cmdPath):
-                self.logger.info('Front is loading CMD file...')
+                self.logger.debug('Front is loading CMD file...')
                 fh = FileHandler()
                 self.processCmds(fh.loadCmd(cmdPath), logDir)
             time.sleep(10)
@@ -49,20 +49,16 @@ class FrontController(object):
                 pass
         
     def load(self, tpPath=None):
-        self.logger.info('Front is loading TP...')
+        self.logger.debug('Front is loading TP...')
         fh = FileHandler()
         self.tp = fh.loadTp(tpPath)
-        self.logger.info(etree.tostring(self.tp.programtree))
+        self.logger.debug(etree.tostring(self.tp.programtree))
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
         self.results = flowrunner.executeAll()
-#         self.logger.info('All results...')
-#         self.logger.info(self.results)
         
     def logAll(self, logDir=None, logFile=None):
-#         self.logger.info('Logging all...')
-#         self.logger.info(self.results)
         if not os.path.exists(logDir):
             os.makedirs(logDir)
         fh = FileHandler()

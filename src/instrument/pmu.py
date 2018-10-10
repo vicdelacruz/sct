@@ -5,6 +5,7 @@ Created on 8 Apr 2018
 '''
 from time import sleep
 from lxml import etree
+import random
 from logger.sctLogger import SctLogger
 
 class Pmu:
@@ -17,22 +18,26 @@ class Pmu:
     '''
     logger = SctLogger(__name__).getLogger()
 
-    def __init__(self, test, pins):
+    def __init__(self, tests, pin):
         '''
         Constructor
         '''
-        self.test = test #Element type
-        self.pins = pins
-        self.meas = etree.Element('Result')
+        self.tests = tests #params
+        self.pin = pin
+        self.meas = etree.Element('Pin', name=pin)
         
     def get(self):
-        for pin in self.pins:
-            self.logger.info(pin)
-            sleep(1)
-            self.getMeas(pin)
+        self.logger.debug('Pmu test for %s...', self.pin)
+        self.meas.text = ''
+        for i, param in enumerate(self.tests):
+#             sleep(1)
+            self.meas.text += self.getMeas(self.pin, param)
+            if i<len(self.tests)-1:
+                self.meas.text += '|'
+        self.logger.debug(etree.tostring(self.meas))
         return self.meas
-    
 
-    def getMeas(self, singlePin):
-        etree.SubElement(self.meas, 'Measurement', Pin=singlePin, Meas='0.75') #Mock
-        
+    def getMeas(self, singlePin, singleParam):
+        self.logger.debug('Pmu test for %s at setpoint=%s...', singlePin, singleParam)
+        result = random.random()*3
+        return "{:.2f}".format(result)

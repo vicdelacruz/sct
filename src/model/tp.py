@@ -19,4 +19,4 @@ class Tp:
         '''
         self.programtree = etree.ElementTree()
         self.resulttree = etree.ElementTree()
-        self.logger.info('Tp is initialized...')
+        self.logger.debug('Tp is initialized...')
