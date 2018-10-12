@@ -31,7 +31,8 @@ class FlowRunner():
         self.logger.info('tests: %s', self.tests)
         self.logger.info('pingroups: %s', self.pingroups)
         testResults = etree.Element('TestResults', name=self.tp.programtree.getroot().get('name'),
-            pkg=self.tp.programtree.getroot().get('pkg'), opn=self.tp.programtree.getroot().get('opn'))
+            pkg=self.tp.programtree.getroot().get('pkg'), opn=self.tp.programtree.getroot().get('opn'),
+            ver=self.tp.programtree.getroot().get('ver'))
         for testType in self.pingroups:
             self.logger.debug('Test type: %s', testType)
             for test in self.pingroups.get(testType):

@@ -63,3 +63,10 @@ class FileHandler:
         else:
             self.logger.error('Invalid testprogram format in %s', fullpath)
         return tp
+
+    def logState(self, logPath=None, state=None):
+        try:
+            with open(logPath, 'w') as f:
+                f.write(state)
+        except Exception as e:
+            self.logger.error('Unable to update state %s in %s: %s', state, logPath, e)

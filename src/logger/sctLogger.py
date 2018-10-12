@@ -39,7 +39,7 @@ class SctLogger(Singleton):
     def createInstance(self, name):
         logger = logging.getLogger(name)
         formatter = logging.Formatter(
-            "%(asctime)s.%(msecs)03d %(levelname)-8s %(name)-22s %(message)s",
+            "%(asctime)s.%(msecs)03d [%(levelname)-8s][%(name)-22s] %(message)s",
             "%Y-%m-%d %H:%M:%S")
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)

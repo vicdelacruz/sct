@@ -3,13 +3,14 @@ Created on 5 May 2018
 
 @author: BIKOYPOGI
 '''
+import os
+import time
+from lxml import etree
 from util.fileHandler import FileHandler
 from model.tp import Tp
 from controller.flowRunner import FlowRunner
 from logger.sctLogger import SctLogger
-from lxml import etree
-import os
-import time
+from status.status import Status
 
 class FrontController(object):
     '''
@@ -24,12 +25,15 @@ class FrontController(object):
         self.tp = Tp()
         self.mainView = mainView
         self.results = None
+        self.status = Status()
         self.logger.debug('Front is initialized...')
         
     def monitor(self, cmdPath=None, logDir = None):
-        
+        self.status.updateState('waiting')
+        self.logState()
         while True:
             self.logger.debug("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
+            self.status.updateState('waiting')
             if os.path.exists(cmdPath):
                 self.logger.debug('Front is loading CMD file...')
                 fh = FileHandler()
@@ -45,23 +49,38 @@ class FrontController(object):
                 self.executeAll()
             elif op[0] == 'LOG_ALL':
                 self.logAll(logDir, op[1])
+            elif op[0] == 'GET_STATUS':
+                self.logState(logDir)
             else:
                 pass
         
     def load(self, tpPath=None):
         self.logger.debug('Front is loading TP...')
+        self.status.updateState('loading')
+        self.logState()
         fh = FileHandler()
         self.tp = fh.loadTp(tpPath)
         self.logger.debug(etree.tostring(self.tp.programtree))
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
+        self.status.updateState('testing')
+        self.logState()
         self.results = flowrunner.executeAll()
         
     def logAll(self, logDir=None, logFile=None):
         if not os.path.exists(logDir):
             os.makedirs(logDir)
         fh = FileHandler()
+        self.status.updateState('testing')
         fh.logResults(os.path.join(logDir,logFile), self.results)
-        self.logger.info('Front finished logging the results...')   
+        self.logger.info('SCT finished logging the results...')   
+        
+    def logState(self):
+        if not os.path.exists(self.status.logDir):
+            os.makedirs(self.status.logDir)
+        fh = FileHandler()
+        self.logger.debug('Asked to log SCT state of \'%s\'...', self.status.state)   
+        fh.logState(os.path.join(self.status.logDir,self.status.logFile), self.status.state)
+        self.logger.info('SCT finished logging the state...')   
         

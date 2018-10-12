@@ -4,3 +4,4 @@ logDir = 'repo/logs'
 logLevel = 0
 logToFile = False
 logFile = 'Sct.log'
+statusFile = 'Sct.state'
