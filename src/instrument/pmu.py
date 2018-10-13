@@ -30,7 +30,7 @@ class Pmu:
         self.logger.debug('Pmu test for %s...', self.pin)
         self.meas.text = ''
         for i, param in enumerate(self.tests):
-#             sleep(1)
+            sleep(0.25)
             self.meas.text += self.getMeas(self.pin, param)
             if i<len(self.tests)-1:
                 self.meas.text += '|'

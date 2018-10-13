@@ -22,16 +22,17 @@ class FrontController(object):
         '''
         Constructor
         '''
+        self.goState = True 
         self.tp = Tp()
         self.mainView = mainView
         self.results = None
         self.status = Status()
         self.logger.debug('Front is initialized...')
-        
+
     def monitor(self, cmdPath=None, logDir = None):
         self.status.updateState('waiting')
         self.logState()
-        while True:
+        while self.goState:
             self.logger.debug("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
             self.status.updateState('waiting')
             if os.path.exists(cmdPath):
@@ -39,7 +40,13 @@ class FrontController(object):
                 fh = FileHandler()
                 self.processCmds(fh.loadCmd(cmdPath), logDir)
             time.sleep(10)
-        
+
+    def stop(self):
+        self.logger.debug('SCT is shutting down...')
+        self.status.updateState('shutdown')
+        self.logState()
+        self.goState = False
+
     def processCmds(self, cmds, logDir):
         for cmd in cmds:
             op = cmd.split()
@@ -51,6 +58,8 @@ class FrontController(object):
                 self.logAll(logDir, op[1])
             elif op[0] == 'GET_STATUS':
                 self.logState(logDir)
+            elif op[0] == 'STOP':
+                self.stop()
             else:
                 pass
         
@@ -61,19 +70,26 @@ class FrontController(object):
         fh = FileHandler()
         self.tp = fh.loadTp(tpPath)
         self.logger.debug(etree.tostring(self.tp.programtree))
+        self.status.updateState('waiting')
+        self.logState()
         
     def executeAll(self):
         flowrunner = FlowRunner(self.tp)
         self.status.updateState('testing')
         self.logState()
         self.results = flowrunner.executeAll()
+        self.status.updateState('waiting')
+        self.logState()
         
     def logAll(self, logDir=None, logFile=None):
         if not os.path.exists(logDir):
             os.makedirs(logDir)
         fh = FileHandler()
         self.status.updateState('testing')
+        self.logState()
         fh.logResults(os.path.join(logDir,logFile), self.results)
+        self.status.updateState('waiting')
+        self.logState()
         self.logger.info('SCT finished logging the results...')   
         
     def logState(self):

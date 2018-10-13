@@ -15,7 +15,7 @@ class Driver:
         addr       The SCT address of the device to write to 
         data       The payload data
     '''
-    logger = SctLogger(__name__).logger
+    logger = SctLogger(__name__).getLogger()
 
     def __init__(self):
         '''

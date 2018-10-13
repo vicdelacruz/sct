@@ -24,7 +24,8 @@ class Status(Singleton):
         'invalid': 'INVALID',
         'waiting': 'WAITING',
         'loading': 'LOADING',
-        'testing': 'TESTING'
+        'testing': 'TESTING',
+        'shutdown': 'SHUTDOWN'
     }
 
     def __init__(self):
