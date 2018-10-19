@@ -7,6 +7,7 @@ from time import sleep
 from lxml import etree
 import random
 from logger.sctLogger import SctLogger
+from instrument.max7301 import Max7301
 
 class Pmu:
     '''
@@ -25,12 +26,13 @@ class Pmu:
         self.tests = tests #params
         self.pin = pin
         self.meas = etree.Element('Pin', name=pin)
+        self.max7301 = Max7301()
         
     def get(self):
         self.logger.debug('Pmu test for %s...', self.pin)
         self.meas.text = ''
         for i, param in enumerate(self.tests):
-            sleep(0.25)
+            sleep(0.05)
             self.meas.text += self.getMeas(self.pin, param)
             if i<len(self.tests)-1:
                 self.meas.text += '|'
@@ -40,4 +42,12 @@ class Pmu:
     def getMeas(self, singlePin, singleParam):
         self.logger.debug('Pmu test for %s at setpoint=%s...', singlePin, singleParam)
         result = random.random()*3
+        self.setMax7301(0b_010000000000001_100_11111_11111)
         return "{:.2f}".format(result)
+    
+    def setMax7301(self, portVals):
+        try:
+            self.max7301.setPorts(portVals)
+        except ValueError:
+            self.logger.exception("Set Max7301 unsuccessful...")
+            
