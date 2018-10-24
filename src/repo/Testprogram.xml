@@ -22,53 +22,53 @@
 			<ForcedValue set="240e-6" />
 			<ForcedValue set="280e-6" />
 			<ForcedValue set="320e-6" />
-			<ForcedValue set="380e-6" />
+			<ForcedValue set="360e-6" />
 			<ForcedValue set="400e-6" />
 		</DataPoints>
 	</TestSetup>
 	<PinGroup name="PwrPins" pintype="power">
-		<Pin channel="0xFFFF" name="VDDCR_CPU" />
-		<Pin channel="0xFFFE" name="VDDCR_NB" />
-		<Pin channel="0xFFFD" name="VDDIO_AUDIO" />
-		<Pin channel="0xFFFC" name="VDDIO_MEM" />
-		<Pin channel="0xFFFB" name="VDDP" />
-		<Pin channel="0xFFFA" name="VDDP_S5" />
-		<Pin channel="0xFFF9" name="VDD_18" />
-		<Pin channel="0xFFF8" name="VDD_18_S5" />
-		<Pin channel="0xFFF7" name="VDD_33" />
-		<Pin channel="0xFFF6" name="VDD_33_S5" />
+		<Pin channel="01" name="VDDCR_CPU" />
+		<Pin channel="02" name="VDDCR_NB" />
+		<Pin channel="03" name="VDDIO_AUDIO" />
+		<Pin channel="04" name="VDDIO_MEM" />
+		<Pin channel="05" name="VDDP" />
+		<Pin channel="06" name="VDDP_S5" />
+		<Pin channel="07" name="VDD_18" />
+		<Pin channel="08" name="VDD_18_S5" />
+		<Pin channel="09" name="VDD_33" />
+		<Pin channel="10" name="VDD_33_S5" />
 	</PinGroup>
 	<PinGroup name="IOPins" pintype="IO">
-		<Pin channel="0x0000" name="MB_DATA[10]/MBA_DATA[5]" />
-		<Pin channel="0x0001" name="MB_EVENT_L" />
-		<Pin channel="0x0002" name="MB_RESET_L" />
-		<Pin channel="0x0003" name="MB_WE_L_ADD[14]/MBB_CA[2]" />
-		<Pin channel="0x0004" name="ALERT_L" />
-		<Pin channel="0x0005" name="CORETYPE" />
-		<Pin channel="0x0006" name="DBREQ_L" />
-		<Pin channel="0x0007" name="PROCHOT_L" />
-		<Pin channel="0x0008" name="PWROK" />
-		<Pin channel="0x0009" name="RESET_L" />
-		<Pin channel="0x000A" name="TCK" />
-		<Pin channel="0x000B" name="TDI" />
-		<Pin channel="0x000C" name="TDO" />
-		<Pin channel="0x000D" name="THERMTRIP_L" />
-		<Pin channel="0x000E" name="TMS" />
-		<Pin channel="0x000F" name="TRST_L" />
-		<Pin channel="0x0010" name="P_GPP_RXN[0]" />
-		<Pin channel="0x0011" name="SATA_ACT_L/AGPIO130" />
-		<Pin channel="0x0012" name="ESPI_ALERT_L/LDRQ0_L/EGPIO108" />
-		<Pin channel="0x0013" name="ESPI_RESET_L/KBRST_L/AGPIO129" />
-		<Pin channel="0x0014" name="SPI_CLK/ESPI_CLK" />
-		<Pin channel="0x0015" name="SPI_CS1_L/EGPIO118" />
-		<Pin channel="0x0016" name="SPI_DI/ESPI_DAT1" />
-		<Pin channel="0x0017" name="SPI_DO/ESPI_DAT0" />
-		<Pin channel="0x0018" name="SPI_HOLD_L/ESPI_DAT3" />
-		<Pin channel="0x0019" name="SPI_ROM_GNT/AGPIO76" />
-		<Pin channel="0x001A" name="SPI_TPM_CS_L/AGPIO29" />
-		<Pin channel="0x001B" name="SPI_WP_L/ESPI_DAT2" />
-		<Pin channel="0x001C" name="UART0_CTS_L/UART2_TXD/EGPIO135" />
-		<Pin channel="0x001D" name="USBC_I2C_SCL" />
-		<Pin channel="0x001E" name="USB_0_DM0" />
+		<Pin channel="1001" name="MB_DATA[10]/MBA_DATA[5]" />
+		<Pin channel="1002" name="MB_EVENT_L" />
+		<Pin channel="1003" name="MB_RESET_L" />
+		<Pin channel="1004" name="MB_WE_L_ADD[14]/MBB_CA[2]" />
+		<Pin channel="1005" name="ALERT_L" />
+		<Pin channel="2015" name="CORETYPE" />
+		<Pin channel="2016" name="DBREQ_L" />
+		<Pin channel="2017" name="PROCHOT_L" />
+		<Pin channel="2018" name="PWROK" />
+		<Pin channel="2019" name="RESET_L" />
+		<Pin channel="3033" name="TCK" />
+		<Pin channel="3303" name="TDI" />
+		<Pin channel="3330" name="TDO" />
+		<Pin channel="3333" name="THERMTRIP_L" />
+		<Pin channel="4040" name="TMS" />
+		<Pin channel="4044" name="TRST_L" />
+		<Pin channel="5050" name="P_GPP_RXN[0]" />
+		<Pin channel="5005" name="SATA_ACT_L/AGPIO130" />
+		<Pin channel="6024" name="ESPI_ALERT_L/LDRQ0_L/EGPIO108" />
+		<Pin channel="6204" name="ESPI_RESET_L/KBRST_L/AGPIO129" />
+		<Pin channel="6240" name="SPI_CLK/ESPI_CLK" />
+		<Pin channel="7198" name="SPI_CS1_L/EGPIO118" />
+		<Pin channel="7199" name="SPI_DI/ESPI_DAT1" />
+		<Pin channel="7200" name="SPI_DO/ESPI_DAT0" />
+		<Pin channel="7201" name="SPI_HOLD_L/ESPI_DAT3" />
+		<Pin channel="7202" name="SPI_ROM_GNT/AGPIO76" />
+		<Pin channel="8380" name="SPI_TPM_CS_L/AGPIO29" />
+		<Pin channel="8381" name="SPI_WP_L/ESPI_DAT2" />
+		<Pin channel="8382" name="UART0_CTS_L/UART2_TXD/EGPIO135" />
+		<Pin channel="8383" name="USBC_I2C_SCL" />
+		<Pin channel="8384" name="USB_0_DM0" />
 	</PinGroup>
 </Testprogram>

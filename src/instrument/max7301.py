@@ -3,7 +3,8 @@ Created on Oct 16, 2018
 
 @author: victord
 '''
-
+import os
+import signal
 from logger.sctLogger import SctLogger
 
 class Max7301(object):
@@ -11,6 +12,8 @@ class Max7301(object):
     Models the Max7301 port states in the SCT board
     '''
     logger = SctLogger(__name__).getLogger()
+    validTypes = ['IO']
+
 
     def __init__(self):
         '''
@@ -57,21 +60,27 @@ class Max7301(object):
         self.ctrl = 0b_000_0000_0000_0000
         self.logger.debug("MAX7301 has been instantiated")
         
-    def setPorts(self, portVals):
-        ls =    portVals & 0b_1_1111
-        cs =    (portVals >> 5) & 0b_1_1111
-        re =    (portVals >> 10) & 0b111
-        ctrl =  (portVals >> 13) & 0b_111_1111_1111_1111
-        if self.validateBits(ls, cs, re, ctrl):
-            self.ls = ls
-            self.cs = cs
-            self.re = re
-            self.ctrl = ctrl
-            self.logger.debug("Settings updated ls={:05b}, cs={:05b}, re={:03b}, ctrl={:015b}".format(ls, cs, re, ctrl))
-            return True
+    def setPorts(self, chType, channelMap, controls):
+        ctrl =  controls & 0b_111_1111_1111_1111
+        if chType in self.validTypes:
+            channel = int(channelMap)
+            ls =    channel & 0b_1_1111
+            cs =    channel>>5 & 0b_1_1111
+            re =    channel>>10 & 0b111
+            if self.validateBits(ls, cs, re, ctrl):
+                self.ls = ls
+                self.cs = cs
+                self.re = re
+                self.ctrl = ctrl
+                self.logger.debug("MAX7301 settings updated ls={:02d}, cs={:02d}, re={:#05b}, ctrl={:#06x}".format(ls, cs, re, ctrl))
+                return True
+            else:
+                os.kill(os.getpid(), signal.SIGINT) 
+                return False
         else:
-            return False
-        
+            self.logger.debug("Type {} is not in {}, skipping...".format(chType, self.validTypes))
+            return True
+                    
     def validateBits(self, ls, cs, re, ctrl):
         valid = True
         if any([
@@ -81,11 +90,11 @@ class Max7301(object):
                 ctrl > 0x7FFF, #only 15 bits
                 ]): 
             valid = False
-            self.logger.exception("Bit validation failed!!!")
-            self.logger.debug("Line Select = {0:b} {1}".format(ls, str(ls > 0x1F)))
-            self.logger.debug("Column Select = {0:b} {1}".format(cs, str(cs > 0x1F)))
-            self.logger.debug("Row Enable = {0:b} {1}".format(re, str(re not in [0b_000, 0b_001, 0b_010, 0b_100])))
-            self.logger.debug("Controls = {0:b} {1}".format(ctrl, str(ctrl > 0x7FFF)))
+            self.logger.debug("Line Select = {:#b} {}".format(ls, str(ls > 0x1F)))
+            self.logger.debug("Column Select = {:#b} {}".format(cs, str(cs > 0x1F)))
+            self.logger.debug("Row Enable = {:#b} {}".format(re, str(re not in [0b_000, 0b_001, 0b_010, 0b_100])))
+            self.logger.debug("Controls = {:#b} {}".format(ctrl, str(ctrl > 0x7FFF)))
+            self.logger.exception("Bit validation failed, shutting down...")
         return valid
         
         

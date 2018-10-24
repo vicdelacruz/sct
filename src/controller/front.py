@@ -27,7 +27,7 @@ class FrontController(object):
         self.mainView = mainView
         self.results = None
         self.status = Status()
-        self.logger.debug('Front is initialized...')
+        self.logger.debug('Front Controller is initialized...')
 
     def monitor(self, cmdPath=None, logDir = None):
         self.status.updateState('waiting')

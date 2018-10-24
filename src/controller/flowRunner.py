@@ -4,7 +4,7 @@ Created on 5 May 2018
 @author: BIKOYPOGI
 '''
 from lxml import etree
-from instrument.pmu import Pmu
+from instrument.tests import Tests
 from spi.spiDriver import Driver
 from logger.sctLogger import SctLogger
 
@@ -18,13 +18,30 @@ class FlowRunner():
         '''
         Constructor
         '''
+        self.testController = Tests()
         self.tp = tp
-        self.logger.info('FlowRunner is initialized with Tp: %s', tp.programtree.getroot().get('name'))
+        self.logger.info('FlowRunner is initialized with Tp: {}'.format(tp.programtree.getroot().get('name')))
         self.logger.debug(etree.tostring(self.tp.programtree))
         self.tests = {}
         self.pingroups = {}
         self.extractTests()
-
+    
+    def extractTests(self):
+        self.logger.info('executeAll: {}'.format(etree.tostring(self.tp.programtree)))
+        for element in self.tp.programtree.iter():
+            self.logger.debug('{} : {}'.format(element.tag, element.attrib))
+            if (element.tag == 'DataPoints'):
+                self.tests[element.get('pingroup')] = []
+            elif (element.tag == 'ForcedValue'):
+                self.tests[element.getparent().get('pingroup')].append(element.get('set'))
+            elif (element.tag == 'PinGroup'):
+                self.pingroups[element.get("pintype")] = {element.get("name"): {} }
+            elif (element.tag == 'Pin' and element.getparent().tag == 'PinGroup'):
+                self.pingroups[element.getparent().get('pintype')].get(element.getparent().get('name')).update({element.get('channel'): element.get('name')})
+        self.logger.debug('Parsed tests: {}'.format(self.tests))
+        self.logger.debug('Parsed pingroups: {}'.format(self.pingroups))
+        self.testController.pinMap = self.pingroups
+        return self.tp
         
     def executeAll(self):
         self.logger.info('executeAll: %s', etree.tostring(self.tp.programtree))
@@ -35,34 +52,29 @@ class FlowRunner():
             ver=self.tp.programtree.getroot().get('ver'))
         for testType in self.pingroups:
             self.logger.debug('Test type: %s', testType)
-            for test in self.pingroups.get(testType):
-                if test not in self.tests.keys():
-                    self.logger.error('Test: %s does not have setpoint(s)', test)
+            for testGroup in self.pingroups.get(testType):
+                if testGroup not in self.tests.keys():
+                    self.logger.error('Test: %s does not have setpoint(s)', testGroup)
                 else:
-                    self.logger.debug('Running test: %s with setpoints %s', test, self.tests.get(test))
-                    testResult = self.executeSingle(testType, test)
+                    self.logger.debug('Running pin group: %s with setpoints %s', testGroup, self.tests.get(testGroup))
+                    testResult = self.executeGroup(testType, self.tests.get(testGroup), testGroup)
                     testResults.append(testResult)
             self.logger.debug('Test results: %s', etree.tostring(testResults))
         self.testSpi()
         return testResults
     
-    def extractTests(self):
-        self.logger.info('executeAll: %s', etree.tostring(self.tp.programtree))
-        for element in self.tp.programtree.iter():
-            self.logger.debug('%s : %s',element.tag, element.attrib )
-            if (element.tag == 'DataPoints'):
-                self.tests[element.get("pingroup")] = []
-                self.logger.debug(self.tests)
-            elif (element.tag == 'ForcedValue'):
-                self.tests[element.getparent().get('pingroup')].append(element.get('set'))
-            elif (element.tag == 'PinGroup'):
-                self.pingroups[element.get("pintype")] = {element.get("name"): [] }
-                self.logger.debug(self.pingroups)
-            elif (element.tag == 'Pin' and element.getparent().tag == 'PinGroup'):
-                self.pingroups[element.getparent().get('pintype')].get(element.getparent().get('name')).append(element.get('name'))
-        self.logger.debug(self.tp)
-        return self.tp
-        
+    def executeGroup(self, testType, testPoints, groupName):
+        testResults = etree.Element('Results', name=testType, pintype = groupName)
+        forcedValue = etree.SubElement(testResults, 'ForcedValue')
+        forcedValue.text = '|'.join(testPoints)   
+        pinResults = self.testController.getGroupResults(testType, 
+            testPoints, self.pingroups.get(testType))
+        self.logger.debug('Pin results: %s', etree.tostring(pinResults))
+        for pinResult in pinResults.getchildren():
+            testResults.append(pinResult)
+        self.logger.debug('Test groups result: %s', etree.tostring(testResults))
+        return testResults
+    
     def executeSingle(self, testType, singleTest):
         singleResult = etree.Element('Results', name=singleTest, pintype=testType)
         forcedValue = etree.SubElement(singleResult, 'ForcedValue')
@@ -70,8 +82,7 @@ class FlowRunner():
         for pin in self.pingroups.get(testType).get(singleTest):
             params = self.tests.get(singleTest)
             self.logger.debug('Testing pin %s for %s', pin, params)
-            pmu = Pmu(params, pin)
-            singleResult.append(pmu.get())
+            singleResult.append(self.testController.getPinResults(params, pin))
             self.logger.debug('Single result: %s', etree.tostring(singleResult))
         return singleResult
 
