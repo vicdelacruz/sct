@@ -36,9 +36,11 @@ class FileHandler:
     def parseCmd(self, fullpath):
         cmds = []
         try:
-            lines = open(fullpath).readlines()
+            fh = open(fullpath)
+            lines = fh.readlines()
             for i, cmd in enumerate(lines):
                 cmds.append(cmd.strip())
+            fh.close()
             os.remove(fullpath)
         except Exception as e:
             self.logger.error('Unable to parse %s: %s', fullpath, e)
