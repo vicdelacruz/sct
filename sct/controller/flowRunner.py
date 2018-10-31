@@ -26,7 +26,7 @@ class FlowRunner():
         self.extractTests()
     
     def extractTests(self):
-        self.logger.info('Extacting tests...')
+        self.logger.info('Extracting tests...')
         for element in self.tp.programtree.iter():
             self.logger.debug('{} : {}'.format(element.tag, element.attrib))
             if (element.tag == 'DataPoints'):
