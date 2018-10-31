@@ -1,9 +1,10 @@
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 
 import unittest
+
 def getTestSuites():
     test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('tests', pattern='test_main*.py')
+    test_suite = test_loader.discover('tests', pattern='test*.py')
     return test_suite
 
 setup(name='sct',
@@ -13,7 +14,8 @@ setup(name='sct',
       author='victord',
       author_email='victor.dela.cruz@amd.com',
       license='MIT',
-      packages=['sct'],
+      packages=find_namespace_packages(include=['sct.*']),
+      package_dir={'sct':'sct'},
       dependency_links=[
           'https://github.com/vicdelacruz/sct.git'
       ],
@@ -21,4 +23,9 @@ setup(name='sct',
       install_requires=[
           'lxml','spidev'
       ],
-      zip_safe=False)
+      entry_points={
+          'console_scripts': ['sct=sct:main'],
+      },
+      include_package_data=True,
+      zip_safe=False,
+)

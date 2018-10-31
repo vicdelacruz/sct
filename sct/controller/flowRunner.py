@@ -60,7 +60,8 @@ class FlowRunner():
                     testResult = self.executeGroup(testType, self.tests.get(testGroup), testGroup, pinGroup)
                     testResults.append(testResult)
             self.logger.debug('Test results: %s', etree.tostring(testResults))
-        return testResults
+        self.testSpi()
+		return testResults
     
     def executeGroup(self, testType, testPoints, testGroup, pinGroup):
         testResults = etree.Element('Results', name=testGroup, pintype=testType)
@@ -83,3 +84,8 @@ class FlowRunner():
             singleResult.append(self.testController.getPinResults(params, pin))
             self.logger.debug('Single result: %s', etree.tostring(singleResult))
         return singleResult
+
+    def testSpi(self):
+        driver = Driver()
+        driver.xfer(0x0, 0b01011010)
+        driver.xfer2(0x0, 0b11110000) 
