@@ -24,11 +24,12 @@ class TestMain(unittest.TestCase):
         logger.addHandler(fhandler)
         self.app = FrontController()
         cmds = ("LOG_STATUS\n"
-                "LOAD sct/repo/FinalProgram.xml\n"
+                "LOAD sct/repo/TestProgram.xml\n"
                 "EXECUTE_ALL\n"
                 "LOG_ALL Measurements.xml")
-        with open(props.cmdPath, 'w') as f:
-                f.write(cmds)
+        cmdFile= open(props.cmdPath, 'w')
+        cmdFile.write(cmds)
+        cmdFile.close()
         self.app.monitor(props.cmdPath, props.logDir, True)
 
     def tearDown(self):

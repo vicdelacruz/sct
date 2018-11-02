@@ -1,4 +1,4 @@
-tpPath = 'sct/repo/Testprogram.xml'
+tpPath = 'sct/repo/TestProgram.xml'
 cmdPath = 'sct/repo/Sct.cmd'
 logDir = 'sct/repo/logs'
 testDir = 'tests'
