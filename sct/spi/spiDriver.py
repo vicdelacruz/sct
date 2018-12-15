@@ -5,7 +5,7 @@ Created on 22 Sep 2018
 '''
 import spidev
 from spi import spiConfig
-from logger.sctLogger import SctLogger
+from sct.logger.sctLogger import SctLogger
 
 class Driver:
     '''
@@ -15,7 +15,7 @@ class Driver:
         addr       The SCT address of the device to write to 
         data       The payload data
     '''
-    logger = SctLogger(__name__).getLogger()
+    logger = SctLogger().getLogger(__name__)
 
     def __init__(self):
         '''

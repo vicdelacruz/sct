@@ -4,6 +4,7 @@ Created on 5 May 2018
 @author: BIKOYPOGI
 '''
 from lxml import etree
+from sct.spi.spiDriver import Driver
 from sct.controller.tests import Tests
 from sct.logger.sctLogger import SctLogger
 
@@ -61,7 +62,7 @@ class FlowRunner():
                     testResults.append(testResult)
             self.logger.debug('Test results: %s', etree.tostring(testResults))
         self.testSpi()
-		return testResults
+        return testResults
     
     def executeGroup(self, testType, testPoints, testGroup, pinGroup):
         testResults = etree.Element('Results', name=testGroup, pintype=testType)
