@@ -1,4 +1,5 @@
-from setuptools import setup, find_namespace_packages 
+from setuptools import setup, find_packages 
+import lxml
 
 import unittest
 
@@ -14,14 +15,14 @@ setup(name='sct',
       author='victord',
       author_email='victor.dela.cruz@amd.com',
       license='MIT',
-      packages=find_namespace_packages(include=['sct.*']),
+      packages=find_packages(include=['sct.*']),
       package_dir={'sct':'sct'},
       dependency_links=[
           'https://github.com/vicdelacruz/sct.git'
       ],
       test_suite='setup.getTestSuites',
       install_requires=[
-          'lxml','spidev'
+          'lxml','spidev', 'RPi.GPIO'
       ],
       entry_points={
           'console_scripts': ['sct=sct:main'],
