@@ -13,3 +13,4 @@ git clone https://github.com/vicdelacruz/sct.git
 cd sct
 git checkout dev
 python3 setup.py install
+#echo "export PYTHONPATH=$PYTHONPATH:/root/ngsct/sct" > ~/.profile 

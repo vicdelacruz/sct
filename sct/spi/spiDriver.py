@@ -4,7 +4,7 @@ Created on 22 Sep 2018
 @author: BIKOYPOGI
 '''
 import spidev
-from spi import spiConfig
+from sct.spi.spiConfig import SpiConfig
 from sct.logger.sctLogger import SctLogger
 
 class Driver:
@@ -24,22 +24,21 @@ class Driver:
         self.addr = 0x0
         self.data = 0x0
         self.spi = spidev.SpiDev()
+        self.spiCfg = SpiCOnfig()
         self.initCfg(self.spi)
 
-    def initCfg(self, spi):
-        '''
+    def initCfg(self, spi, spiConfig):
         spi.bits_per_word = spiConfig.bitsPerWord
-        spi.cshigh = spiConfig.csHigh
-        spi.loop = spiConfig.loop
-        spi.lsbfirst = spiConfig.lsbFirst
-        spi.max_speed_hz = spiConfig.maxSpeedHz
-        spi.mode = spiConfig.mode
-        '''
         self.logger.info("spi bitsPerWord = %s" % spiConfig.bitsPerWord)
+        spi.cshigh = spiConfig.csHigh
         self.logger.info("spi csHigh      = %s"      % spiConfig.csHigh)
+        spi.loop = spiConfig.loop
         self.logger.info("spi loop        = %s"        % spiConfig.loop)
+        spi.lsbfirst = spiConfig.lsbFirst
         self.logger.info("spi lsbFirst    = %s"    % spiConfig.lsbFirst)
+        spi.max_speed_hz = spiConfig.maxSpeedHz
         self.logger.info("spi maxSpeedHz  = %s"  % spiConfig.maxSpeedHz)
+        spi.mode = spiConfig.mode
         self.logger.info("spi mode        = %s"        % spiConfig.mode)
 
     def setCfg(self, attr, value):
