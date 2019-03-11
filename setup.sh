@@ -13,4 +13,11 @@ git clone https://github.com/vicdelacruz/sct.git
 cd sct
 git checkout dev
 python3 setup.py install
+#vim /lib/systemd/system/getty@.service 
+#chmod 755 /etc/sudoers
+#vim /etc/sudoers
+#chmod 440 /etc/sudoers
 #echo "export PYTHONPATH=$PYTHONPATH:/root/ngsct/sct" > ~/.profile 
+#vim /etc/netplan/50-cloud-init.yaml 
+#netplan generate
+#netplan apply

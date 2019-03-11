@@ -3,8 +3,11 @@ Created on 22 Sep 2018
 
 @author: BIKOYPOGI
 '''
-import spidev
+import sys, signal
+from spidev import SpiDev
+import RPi.GPIO as GPIO
 from sct.spi.spiConfig import SpiConfig
+from sct.spi.gpioConfig import GpioConfig
 from sct.logger.sctLogger import SctLogger
 
 class Driver:
@@ -23,47 +26,64 @@ class Driver:
         '''
         self.addr = 0x0
         self.data = 0x0
-        self.spi = spidev.SpiDev()
-        self.spiCfg = SpiCOnfig()
-        self.initCfg(self.spi)
+        self.cleanup()
+        self.spi = SpiDev()
+        self.spiCfg = SpiConfig()
+        #self.initSpi()
+        self.gpioCfg = GpioConfig()
+        self.initGpio()
 
-    def initCfg(self, spi, spiConfig):
-        spi.bits_per_word = spiConfig.bitsPerWord
-        self.logger.info("spi bitsPerWord = %s" % spiConfig.bitsPerWord)
-        spi.cshigh = spiConfig.csHigh
-        self.logger.info("spi csHigh      = %s"      % spiConfig.csHigh)
-        spi.loop = spiConfig.loop
-        self.logger.info("spi loop        = %s"        % spiConfig.loop)
-        spi.lsbfirst = spiConfig.lsbFirst
-        self.logger.info("spi lsbFirst    = %s"    % spiConfig.lsbFirst)
-        spi.max_speed_hz = spiConfig.maxSpeedHz
-        self.logger.info("spi maxSpeedHz  = %s"  % spiConfig.maxSpeedHz)
-        spi.mode = spiConfig.mode
-        self.logger.info("spi mode        = %s"        % spiConfig.mode)
+    def initSpi(self):
+        # SpiConfig
+        #self.spi.bits_per_word = self.spiCfg.bitsPerWord
+        #self.spi.cshigh        = self.spiCfg.csHigh
+        #self.spi.loop          = self.spiCfg.loop
+        #self.spi.lsbfirst      = self.spiCfg.lsbFirst
+        self.spi.max_speed_hz  = self.spiCfg.maxSpeedHz
+        #self.spi.mode          = self.spiCfg.mode
 
-    def setCfg(self, attr, value):
-        if not hasattr(self, attr):
-            raise AttributeError("config has no setting %s" % attr)
+    def initGpio(self):
+        GPIO.setwarnings(self.gpioCfg.warn)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.gpioCfg.gpio_list, GPIO.OUT)
+        GPIO.output(self.gpioCfg.gpio_list, GPIO.HIGH)
+
+    def setCE(self, port):
+        newPort = self.sanitize(port)
+        if newPort in self.gpioCfg.gpio_list:
+            GPIO.output(newPort, GPIO.LOW)
         else:
-            setattr(self, attr, value)
+            self.logger.error("GPIO port {} not found in GpioList...".format(newPort))
 
-    def open(self, addr):
-        self.spi.open(0, addr)
+    def unsetCE(self):
+        GPIO.output(self.gpioCfg.gpio_list, GPIO.HIGH)
+
+    def open(self, cs):
+        if cs == 0:
+            self.spi.open(0, 0)
+        elif (cs >= 1 and cs < 4):
+            self.setCE(self.gpioCfg.gpio_list[cs-1])
+            self.spi.open(0, 1)
+        else:
+            self.logger.error("CS #{} not valid...".format(cs))
 
     def close(self):
         self.spi.close()
+        self.unsetCE()
 
-    def xfer(self, addr, data):
-        self.open(addr)
-        self.spi.xfer(self.sanitize(data))
+    def xfer(self, cs, data):
+        hbyte, lbyte = self.sanitize(data)
+        self.open(cs)
+        self.spi.xfer([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI has sent data 0x%x to address 0x%x" % (data, addr))
+        self.logger.info("SPI has sent data 0x%x 0x%x to dev 0x%x" % (hbyte, lbyte, cs))
 
-    def xfer2(self, addr, data):
-        self.open(addr)
-        self.spi.xfer2(self.sanitize(data))
+    def xfer2(self, cs, data):
+        hbyte, lbyte = self.sanitize(data)
+        self.open(cs)
+        self.spi.xfer([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI has sent data 0x%x to address 0x%x" % (data, addr))
+        self.logger.info("SPI has sent data 0x%x 0x%x to dev 0x%x" % (hbyte, lbyte, cs))
 
     def sanitize(self, data):
         if isinstance(data, list):
@@ -71,3 +91,15 @@ class Driver:
         else:
             return([data])
 
+    def setCfg(self, attr, value):
+        if not hasattr(self, attr):
+            raise AttributeError("config has no setting %s" % attr)
+        else:
+            setattr(self, attr, value)
+
+    def cleanup(self):
+        try:
+            self.spi.close()
+            GPIO.cleanup()
+        except:
+            self.logger.info("Nothing to cleanup...")

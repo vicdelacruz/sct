@@ -88,5 +88,7 @@ class FlowRunner():
 
     def testSpi(self):
         driver = Driver()
-        driver.xfer(0x0, 0b01011010)
-        driver.xfer2(0x0, 0b11110000) 
+        driver.xfer(0x0, [0xde, 0xad])
+        driver.xfer2(0x1, [0xbe, 0xef]) 
+        driver.xfer2(0x2, [0xff, 0x00]) 
+        driver.xfer2(0x3, [0x55, 0xaa]) 
