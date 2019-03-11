@@ -8,7 +8,7 @@ class SpiConfig:
         self.csHigh         = True
         self.loop           = False
         self.lsbFirst       = False
-        self.maxSpeedHz     = 100000
+        self.maxSpeedHz     = 1000000
         self.mode           = 0b01
         self.threeWire      = False
         self.logger.info("spi bitsPerWord = %s" % self.bitsPerWord)

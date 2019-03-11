@@ -9,6 +9,7 @@ import RPi.GPIO as GPIO
 from sct.spi.spiConfig import SpiConfig
 from sct.spi.gpioConfig import GpioConfig
 from sct.logger.sctLogger import SctLogger
+from pprint import pprint
 
 class Driver:
     '''
@@ -28,19 +29,32 @@ class Driver:
         self.data = 0x0
         self.cleanup()
         self.spi = SpiDev()
-        self.spiCfg = SpiConfig()
-        #self.initSpi()
+        #self.spiCfg = SpiConfig()
         self.gpioCfg = GpioConfig()
         self.initGpio()
 
     def initSpi(self):
         # SpiConfig
-        #self.spi.bits_per_word = self.spiCfg.bitsPerWord
-        #self.spi.cshigh        = self.spiCfg.csHigh
-        #self.spi.loop          = self.spiCfg.loop
-        #self.spi.lsbfirst      = self.spiCfg.lsbFirst
-        self.spi.max_speed_hz  = self.spiCfg.maxSpeedHz
-        #self.spi.mode          = self.spiCfg.mode
+        self.logger.info("Before ...")
+        self.logger.info("spi bitsPerWord = %s" % self.spi.bits_per_word)
+        self.logger.info("spi csHigh      = %s"      % self.spi.cshigh)
+        self.logger.info("spi loop        = %s"        % self.spi.loop)
+        self.logger.info("spi lsbFirst    = %s"    % self.spi.lsbfirst)
+        self.logger.info("spi maxSpeedHz  = %s"  % self.spi.max_speed_hz)
+        self.logger.info("spi mode        = %s"        % self.spi.mode)
+        self.spi.bits_per_word = self.spiCfg.bitsPerWord
+        self.spi.cshigh =        self.spiCfg.csHigh
+        self.spi.loop =          self.spiCfg.loop
+        self.spi.lsbfirst =      self.spiCfg.lsbFirst
+        self.spi.max_speed_hz =  self.spiCfg.maxSpeedHz
+        self.spi.mode =          self.spiCfg.mode
+        self.logger.info("After...")
+        self.logger.info("spi bitsPerWord = %s" % self.spi.bits_per_word)
+        self.logger.info("spi csHigh      = %s"      % self.spi.cshigh)
+        self.logger.info("spi loop        = %s"        % self.spi.loop)
+        self.logger.info("spi lsbFirst    = %s"    % self.spi.lsbfirst)
+        self.logger.info("spi maxSpeedHz  = %s"  % self.spi.max_speed_hz)
+        self.logger.info("spi mode        = %s"        % self.spi.mode)
 
     def initGpio(self):
         GPIO.setwarnings(self.gpioCfg.warn)
@@ -50,10 +64,10 @@ class Driver:
 
     def setCE(self, port):
         newPort = self.sanitize(port)
-        if newPort in self.gpioCfg.gpio_list:
+        if port in self.gpioCfg.gpio_list:
             GPIO.output(newPort, GPIO.LOW)
         else:
-            self.logger.error("GPIO port {} not found in GpioList...".format(newPort))
+            self.logger.error("GPIO port {} not found in GpioList {}...".format(newPort, self.gpioCfg.gpio_list))
 
     def unsetCE(self):
         GPIO.output(self.gpioCfg.gpio_list, GPIO.HIGH)
@@ -61,9 +75,11 @@ class Driver:
     def open(self, cs):
         if cs == 0:
             self.spi.open(0, 0)
+            #self.initSpi()
         elif (cs >= 1 and cs < 4):
             self.setCE(self.gpioCfg.gpio_list[cs-1])
             self.spi.open(0, 1)
+            #self.initSpi()
         else:
             self.logger.error("CS #{} not valid...".format(cs))
 
@@ -74,16 +90,18 @@ class Driver:
     def xfer(self, cs, data):
         hbyte, lbyte = self.sanitize(data)
         self.open(cs)
+        xfer_speed = self.spi.max_speed_hz
         self.spi.xfer([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI has sent data 0x%x 0x%x to dev 0x%x" % (hbyte, lbyte, cs))
+        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, xfer_speed))
 
     def xfer2(self, cs, data):
         hbyte, lbyte = self.sanitize(data)
         self.open(cs)
+        xfer_speed = self.spi.max_speed_hz
         self.spi.xfer([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI has sent data 0x%x 0x%x to dev 0x%x" % (hbyte, lbyte, cs))
+        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, xfer_speed))
 
     def sanitize(self, data):
         if isinstance(data, list):
