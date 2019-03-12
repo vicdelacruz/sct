@@ -88,7 +88,13 @@ class FlowRunner():
 
     def testSpi(self):
         driver = Driver()
-        driver.xfer(0x0, [0xde, 0xad])
-        driver.xfer2(0x1, [0xbe, 0xef]) 
-        driver.xfer2(0x2, [0xff, 0x00]) 
-        driver.xfer2(0x3, [0x55, 0xaa]) 
+        driver.spiCfg.printVals()
+        driver.gpioCfg.printVals()
+        driver.cfg_write(0x0, [0xde, 0xad])
+        driver.cfg_write(0x0, [0xbe, 0xef], 100000) 
+        driver.cfg_write(0x2, [0xff, 0x00]) 
+        driver.cfg_write(0x3, [0x55, 0xaa], 1000000) 
+        ch, adcout = driver.adc_read([0x05, 0x04]) 
+        self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))
+        ch, adcout = driver.adc_read([0x05, 0x04], 100000) 
+        self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))

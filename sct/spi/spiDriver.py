@@ -25,36 +25,24 @@ class Driver:
         '''
         Constructor
         '''
-        self.addr = 0x0
-        self.data = 0x0
         self.cleanup()
+
         self.spi = SpiDev()
-        #self.spiCfg = SpiConfig()
+        self.spiCfg = SpiConfig()
+        #use default spidev values for now
+        self.spiCfg.refreshVals()
+
         self.gpioCfg = GpioConfig()
         self.initGpio()
 
-    def initSpi(self):
-        # SpiConfig
-        self.logger.info("Before ...")
-        self.logger.info("spi bitsPerWord = %s" % self.spi.bits_per_word)
-        self.logger.info("spi csHigh      = %s"      % self.spi.cshigh)
-        self.logger.info("spi loop        = %s"        % self.spi.loop)
-        self.logger.info("spi lsbFirst    = %s"    % self.spi.lsbfirst)
-        self.logger.info("spi maxSpeedHz  = %s"  % self.spi.max_speed_hz)
-        self.logger.info("spi mode        = %s"        % self.spi.mode)
-        self.spi.bits_per_word = self.spiCfg.bitsPerWord
-        self.spi.cshigh =        self.spiCfg.csHigh
-        self.spi.loop =          self.spiCfg.loop
-        self.spi.lsbfirst =      self.spiCfg.lsbFirst
-        self.spi.max_speed_hz =  self.spiCfg.maxSpeedHz
-        self.spi.mode =          self.spiCfg.mode
-        self.logger.info("After...")
-        self.logger.info("spi bitsPerWord = %s" % self.spi.bits_per_word)
-        self.logger.info("spi csHigh      = %s"      % self.spi.cshigh)
-        self.logger.info("spi loop        = %s"        % self.spi.loop)
-        self.logger.info("spi lsbFirst    = %s"    % self.spi.lsbfirst)
-        self.logger.info("spi maxSpeedHz  = %s"  % self.spi.max_speed_hz)
-        self.logger.info("spi mode        = %s"        % self.spi.mode)
+    def initSpi(self, spiCfg):
+        self.spi.bits_per_word = spiCfg.bitsPerWord
+        self.spi.cshigh =        spiCfg.csHigh
+        self.spi.loop =          spiCfg.loop
+        self.spi.lsbfirst =      spiCfg.lsbFirst
+        self.spi.max_speed_hz =  spiCfg.maxSpeedHz
+        self.spi.mode =          spiCfg.mode
+        self.spi.threewire =     spiCfg.threeWire
 
     def initGpio(self):
         GPIO.setwarnings(self.gpioCfg.warn)
@@ -74,34 +62,50 @@ class Driver:
 
     def open(self, cs):
         if cs == 0:
+            self.logger.info("Opening SPI 0,0...")
             self.spi.open(0, 0)
-            #self.initSpi()
-        elif (cs >= 1 and cs < 4):
+            self.initSpi(self.spiCfg)
+        elif (cs > 0 and cs < 4):
+            self.logger.info("Opening SPI 0,1 with CE {}...".format(cs-1))
             self.setCE(self.gpioCfg.gpio_list[cs-1])
             self.spi.open(0, 1)
-            #self.initSpi()
+            self.initSpi(self.spiCfg)
         else:
             self.logger.error("CS #{} not valid...".format(cs))
 
     def close(self):
+        self.logger.info("Closing SPI and resetting CE's...")
         self.spi.close()
         self.unsetCE()
 
-    def xfer(self, cs, data):
+    def cfg_write(self, cs, data, speed=125000000):
         hbyte, lbyte = self.sanitize(data)
         self.open(cs)
-        xfer_speed = self.spi.max_speed_hz
-        self.spi.xfer([hbyte, lbyte])
+        self.spi.max_speed_hz = speed
+        result = self.spi.xfer2([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, xfer_speed))
+        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, speed))
+        return result
 
-    def xfer2(self, cs, data):
+    def cfg_read(self, cs, data, speed=125000000):
         hbyte, lbyte = self.sanitize(data)
         self.open(cs)
-        xfer_speed = self.spi.max_speed_hz
-        self.spi.xfer([hbyte, lbyte])
+        self.spi.max_speed_hz = speed
+        result = self.spi.xfer2([hbyte, lbyte])
         self.close()
-        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, xfer_speed))
+        msb, lsb = result
+        self.logger.info("SPI received 0x%x 0x%x from dev 0x%x @ %.3E Hz" % (msb, lsb, cs, speed))
+        return result
+
+    def adc_read(self, data, speed=125000000):
+        cs = self.gpioCfg.gpio_list.index(self.gpioCfg.ce_ads8638[0]) + 1
+        self.cfg_write(cs, data, speed)
+        hbyte, lbyte = self.cfg_read(cs, [0x00, 0x00], speed)
+        self.close()
+        chbyte = (0xF0 & hbyte) >> 4
+        adcout_msb = 0x0F & hbyte
+        adcout = adcout_msb*256 + lbyte
+        return [chbyte, adcout]
 
     def sanitize(self, data):
         if isinstance(data, list):
