@@ -4,12 +4,17 @@ Created on Oct 16, 2018
 @author: victord
 '''
 from sct.logger.sctLogger import SctLogger
+from sct.spi.spiDriver import Driver
 
 class Max5322(object):
     '''
     Models the Max5322 voltage DAC in the SCT board
     '''
     logger = SctLogger().getLogger(__name__)
+
+    CHIPSEL = 0x1 #Device #1
+    #FREQUENCY = 1000000 # 1MHz baud rate 
+    FREQUENCY = 1000000 # 1MHz baud rate 
     
     voutStart = -5.0
     voutStop = 5.0
@@ -34,10 +39,12 @@ class Max5322(object):
             'io': { 'dac': 0x0, 'force': 0.0, 'out': 0.0 },
             'power': { 'dac': 0x0, 'force': 0.0, 'out': 0.0 }
         }
+        self.driver = None
         
         self.logger.debug("MAX5322 has been instantiated")
         
-    def setIForce(self, chType, current):
+    def setIForce(self, driver, chType, current):
+        self.driver = driver
         current = float(current)
         if self.validateRange(chType, current):
             (dac, force) = self.quantizeI(chType, current)
@@ -46,10 +53,23 @@ class Max5322(object):
             self.states.get(chType)['force'] = force
             self.states.get(chType)['out'] =  out
             self.logger.debug("MAX5322 settings updated force={:.4E}A, dac={:#05x}, out={:.4f}V".format(force, dac, out))
+            self.sendBytes(chType) 
             return True
         else: 
             return False
-        
+
+    def sendBytes(self, chType):
+        adc_msb = (self.states.get(chType)['dac'] >> 8) & 0x0F
+        lsb = self.states.get(chType)['dac'] & 0xFF
+        if chType == 'io':
+            self.driver.cfg_write(self.CHIPSEL, [0x20|adc_msb, lsb], self.FREQUENCY) 
+            self.driver.cfg_write(self.CHIPSEL, [0x40|adc_msb, lsb], self.FREQUENCY) 
+        elif chType == 'power':     
+            self.driver.cfg_write(self.CHIPSEL, [0x30|adc_msb, lsb], self.FREQUENCY) 
+            self.driver.cfg_write(self.CHIPSEL, [0x50|adc_msb, lsb], self.FREQUENCY) 
+        else: 
+            self.logger.error("Invalid channel type ({})...".format(chType))
+
     def validateRange(self, chType, current):
         valid = True
         cond = [
@@ -61,7 +81,7 @@ class Max5322(object):
             self.logger.error("Invalid condition({}) with (\'{}\', {}) ".format(cond.index(True), chType, current))
             valid = False
         return valid
-    
+
     def quantizeI(self, chType, current):
         qDac = int( (current - self.pmuTypes.get(chType).get('start'))/ self.pmuTypes.get(chType).get('res') )
         #Not a bug but per datasheet, max qout is self.dacSteps-1*dacRes

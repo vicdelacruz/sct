@@ -7,6 +7,7 @@ from lxml import etree
 from sct.instrument.pmu import Pmu
 from sct.instrument.lookup import Lookup
 from sct.logger.sctLogger import SctLogger
+import time
 
 class Tests():
     '''
@@ -51,6 +52,7 @@ class Tests():
         self.meas = etree.Element('Pin', name=pin)
         self.meas.text = ''
         for i, param in enumerate(tests):
+            time.sleep(0.0005)
             self.meas.text += self.pmu.getMeas(pin, param)
             if i<len(tests)-1:
                 self.meas.text += '|'

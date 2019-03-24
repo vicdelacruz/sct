@@ -4,7 +4,7 @@ Created on 5 May 2018
 @author: BIKOYPOGI
 '''
 from lxml import etree
-from sct.spi.spiDriver import Driver
+#from sct.spi.spiDriver import Driver
 from sct.controller.tests import Tests
 from sct.logger.sctLogger import SctLogger
 
@@ -61,7 +61,7 @@ class FlowRunner():
                     testResult = self.executeGroup(testType, self.tests.get(testGroup), testGroup, pinGroup)
                     testResults.append(testResult)
             self.logger.debug('Test results: %s', etree.tostring(testResults))
-        self.testSpi()
+        #self.testSpi()
         return testResults
     
     def executeGroup(self, testType, testPoints, testGroup, pinGroup):
@@ -86,15 +86,11 @@ class FlowRunner():
             self.logger.debug('Single result: %s', etree.tostring(singleResult))
         return singleResult
 
-    def testSpi(self):
-        driver = Driver()
-        driver.spiCfg.printVals()
-        driver.gpioCfg.printVals()
-        driver.cfg_write(0x0, [0xde, 0xad])
-        driver.cfg_write(0x0, [0xbe, 0xef], 100000) 
-        driver.cfg_write(0x2, [0xff, 0x00]) 
-        driver.cfg_write(0x3, [0x55, 0xaa], 1000000) 
-        ch, adcout = driver.adc_read([0x05, 0x04]) 
-        self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))
-        ch, adcout = driver.adc_read([0x05, 0x04], 100000) 
-        self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))
+#    def testSpi(self):
+        #driver.cfg_write(0x1, [0xbe, 0xef], 100000) 
+        #driver.cfg_write(0x2, [0xff, 0x00]) 
+        #driver.cfg_write(0x3, [0x55, 0xaa], 1000000) 
+        #ch, adcout = driver.adc_read([0x05, 0x04]) 
+        #self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))
+        #ch, adcout = driver.adc_read([0x05, 0x04], 100000) 
+        #self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))

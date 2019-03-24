@@ -9,6 +9,7 @@ from sct.instrument.max7301 import Max7301
 from sct.instrument.max5322 import Max5322
 from sct.instrument.ads8638 import Ads8638
 from sct.instrument.mc33996 import Mc33996
+from sct.spi.spiDriver import Driver
 
 class Pmu:
     '''
@@ -33,10 +34,18 @@ class Pmu:
             'io': { 'pinSelect': 0b_001_00000_00000, 'adcChannel': 0x0 },
             'power': { 'pinSelect': 0b_0000_0000_0000_0001, 'adcChannel': 0x7 },
         }
+        self.driver = Driver()
+        self.initDevices()
+
+    def initDevices(self):
+        self.driver.spiCfg.printVals()
+        self.driver.gpioCfg.printVals()
+        #Max5322
+        self.driver.cfg_write(0x1, [0xe0, 0x00], 1000000) 
 
     def setup(self, testType, singleChannel, singleParam):
         self.states.get(testType)['pinSelect'] = singleChannel
-        self.setMax5322(testType, singleParam)
+        self.setMax5322(self.driver, testType, singleParam)
         self.setMax7301(testType, singleChannel, 0x401)
         self.setMc33996(testType, singleChannel)
         self.setAds8638(self.states.get(testType).get('adcChannel'))
@@ -50,9 +59,9 @@ class Pmu:
             self.states.get('io').get('pinSelect'), self.states.get('power').get('pinSelect')))
         return result
     
-    def setMax5322(self, testType, singleParam):
+    def setMax5322(self, driver, testType, singleParam):
         try:
-            self.max5322.setIForce(testType, singleParam)
+            self.max5322.setIForce(driver, testType, singleParam)
         except ValueError as e:
             self.logger.exception("Set Max5322 unsuccessful: {}...", e)
     

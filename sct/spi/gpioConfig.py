@@ -14,9 +14,9 @@ class GpioConfig:
         self.warn           = False
 
     def printVals(self):
-        self.logger.info("ce_max5322 = %s" % self.ce_max5322)
-        self.logger.info("ce_ads8638 = %s" % self.ce_ads8638)
-        self.logger.info("ce_mc33996 = %s" % self.ce_mc33996)
-        self.logger.info("gpio_list  = %s" % self.gpio_list)
-        self.logger.info("gpio_mode  = %s" % self.mode)
-        self.logger.info("gpio_warn  = %s" % self.warn)
+        self.logger.debug("ce_max5322 = %s" % self.ce_max5322)
+        self.logger.debug("ce_ads8638 = %s" % self.ce_ads8638)
+        self.logger.debug("ce_mc33996 = %s" % self.ce_mc33996)
+        self.logger.debug("gpio_list  = %s" % self.gpio_list)
+        self.logger.debug("gpio_mode  = %s" % self.mode)
+        self.logger.debug("gpio_warn  = %s" % self.warn)
