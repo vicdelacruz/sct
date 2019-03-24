@@ -97,16 +97,6 @@ class Driver:
         self.logger.info("SPI received 0x%x 0x%x from dev 0x%x @ %.3E Hz" % (msb, lsb, cs, speed))
         return result
 
-    def adc_read(self, data, speed=125000000):
-        cs = self.gpioCfg.gpio_list.index(self.gpioCfg.ce_ads8638[0]) + 1
-        self.cfg_write(cs, data, speed)
-        hbyte, lbyte = self.cfg_read(cs, [0x00, 0x00], speed)
-        self.close()
-        chbyte = (0xF0 & hbyte) >> 4
-        adcout_msb = 0x0F & hbyte
-        adcout = adcout_msb*256 + lbyte
-        return [chbyte, adcout]
-
     def sanitize(self, data):
         if isinstance(data, list):
             return data

@@ -13,7 +13,6 @@ class Max5322(object):
     logger = SctLogger().getLogger(__name__)
 
     CHIPSEL = 0x1 #Device #1
-    #FREQUENCY = 1000000 # 1MHz baud rate 
     FREQUENCY = 1000000 # 1MHz baud rate 
     
     voutStart = -5.0
@@ -42,7 +41,11 @@ class Max5322(object):
         self.driver = None
         
         self.logger.debug("MAX5322 has been instantiated")
-        
+
+    def setCfg(self, driver, data=[]):
+        self.driver = driver
+        self.sendBytes('cfg', data) 
+
     def setIForce(self, driver, chType, current):
         self.driver = driver
         current = float(current)
@@ -58,17 +61,20 @@ class Max5322(object):
         else: 
             return False
 
-    def sendBytes(self, chType):
-        adc_msb = (self.states.get(chType)['dac'] >> 8) & 0x0F
-        lsb = self.states.get(chType)['dac'] & 0xFF
-        if chType == 'io':
-            self.driver.cfg_write(self.CHIPSEL, [0x20|adc_msb, lsb], self.FREQUENCY) 
-            self.driver.cfg_write(self.CHIPSEL, [0x40|adc_msb, lsb], self.FREQUENCY) 
-        elif chType == 'power':     
-            self.driver.cfg_write(self.CHIPSEL, [0x30|adc_msb, lsb], self.FREQUENCY) 
-            self.driver.cfg_write(self.CHIPSEL, [0x50|adc_msb, lsb], self.FREQUENCY) 
-        else: 
-            self.logger.error("Invalid channel type ({})...".format(chType))
+    def sendBytes(self, chType, data=[0x00, 0x00]):
+        if chType == 'cfg':
+            self.driver.cfg_write(self.CHIPSEL, data, self.FREQUENCY) 
+        else:
+            adc_msb = (self.states.get(chType)['dac'] >> 8) & 0x0F
+            lsb = self.states.get(chType)['dac'] & 0xFF
+            if chType == 'io':
+                self.driver.cfg_write(self.CHIPSEL, [0x20|adc_msb, lsb], self.FREQUENCY) 
+                self.driver.cfg_write(self.CHIPSEL, [0x40|adc_msb, lsb], self.FREQUENCY) 
+            elif chType == 'power':     
+                self.driver.cfg_write(self.CHIPSEL, [0x30|adc_msb, lsb], self.FREQUENCY) 
+                self.driver.cfg_write(self.CHIPSEL, [0x50|adc_msb, lsb], self.FREQUENCY) 
+            else: 
+                self.logger.error("Invalid channel type ({})...".format(chType))
 
     def validateRange(self, chType, current):
         valid = True

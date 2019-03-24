@@ -40,42 +40,55 @@ class Pmu:
     def initDevices(self):
         self.driver.spiCfg.printVals()
         self.driver.gpioCfg.printVals()
-        #Max5322
-        self.driver.cfg_write(0x1, [0xe0, 0x00], 1000000) 
+        #Max5322 - TODO: do we need this?
+        self.setConfig(self.max5322, [0xE0, 0x00]) #Power up both DACs
+        #Ads8638
+        self.setConfig(self.ads8638, [0x01, 0x00]) #Reset disable
+        self.setConfig(self.ads8638, [0x06, 0x0C]) #AL_PD=1, IntVREF=1, TempSense=0
+        self.setConfig(self.ads8638, [0x0C, 0x80]) #Automode on Ch0 and Ch7 only
+        self.setConfig(self.ads8638, [0x10, 0x22]) #Range 010
+        self.setConfig(self.ads8638, [0x11, 0x22]) #Range 010
+        self.setConfig(self.ads8638, [0x12, 0x22]) #Range 010
+        self.setConfig(self.ads8638, [0x13, 0x22]) #Range 010
 
     def setup(self, testType, singleChannel, singleParam):
         self.states.get(testType)['pinSelect'] = singleChannel
-        self.setMax5322(self.driver, testType, singleParam)
+        self.setMax5322(testType, singleParam)
         self.setMax7301(testType, singleChannel, 0x401)
         self.setMc33996(testType, singleChannel)
-        self.setAds8638(self.states.get(testType).get('adcChannel'))
-        self.ads8638.readAdc()
         self.logger.debug("Pmu tests type {} for channel {} at setpoint={}...".format(
             testType, singleChannel, singleParam))
-    
-    def getMeas(self):
-        result = self.ads8638.getVmeas()
-        self.logger.debug("States: io: {:#015b}, power: {:#018b}".format(
-            self.states.get('io').get('pinSelect'), self.states.get('power').get('pinSelect')))
+
+    def getMeas(self, testType):
+        muxSel = self.states.get(testType).get('adcChannel')
+        (chByte, result) = self.getAds8638(muxSel)
+        self.logger.debug("ChByte: {} ADCOut: {} for Mux Sel: {}...".format(chByte, result, muxSel))
         return result
-    
-    def setMax5322(self, driver, testType, singleParam):
+
+    def setConfig(self, component, data):
         try:
-            self.max5322.setIForce(driver, testType, singleParam)
+            component.setCfg(self.driver, data)
+        except ValueError as e:
+            self.logger.exception("Unable to configure {} with data:{}...", component, data)
+
+    def setMax5322(self, testType, singleParam):
+        try:
+            self.max5322.setIForce(self.driver, testType, singleParam)
         except ValueError as e:
             self.logger.exception("Set Max5322 unsuccessful: {}...", e)
-    
+
     def setMax7301(self, testType, channelSelect, ctrl):
         try:
             self.max7301.setPorts(testType, channelSelect, ctrl)
         except ValueError as e:
             self.logger.exception("Set Max7301 unsuccessful: {}...", e)
                         
-    def setAds8638(self, muxSel):
+    def getAds8638(self, muxVal):
         try:
-            self.ads8638.setMux(muxSel)
+            result = self.ads8638.readAdc(self.driver, muxVal)
+            return result
         except ValueError as e:
-            self.logger.exception("Set ADS8638 unsuccessful: {}...", e)
+            self.logger.exception("Get ADS8638 unsuccessful: {}...", e)
             
     def setMc33996(self, testType, relaySel):
         try:

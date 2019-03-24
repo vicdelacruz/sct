@@ -5,6 +5,7 @@ Created on Oct 16, 2018
 '''
 import random
 from sct.logger.sctLogger import SctLogger
+from sct.spi.spiDriver import Driver
 
 class Ads8638(object):
     '''
@@ -16,39 +17,46 @@ class Ads8638(object):
     rangeSteps = 2**12
     rangeResolution = (rangeStop - rangeStart)/rangeSteps
 
+    CHIPSEL = 0x2 #Device #2
+    FREQUENCY = 1000000 # 1MHz baud rate 
+    RANGESEL = 0b010 #Range Select
+    TSENSESEL = 0b0 #Temp Sensor Select
+    MANUALMODE = 0x40 #Manual mode
+    AUTOMODE = 0x50 #Auto mode
+
     def __init__(self):
         '''
         Default settings
         '''
         self.states = {
             #Holds the 12-bit ADC serial readout 
-            'digOut': 0b_0000_0000_0000,
-            #Represents the normalized Vmeas based on muxSel
-            'anaOut': 0.0,
+            'digOut': 0b_1011_1010_1101, #BAD
             #Input Select - integer var
-            'muxSel': 0x0,
-            #8 Analog inputs 
-            'ins': {
-                0x0: {'name': 'AIN0', 'analog': 0.0 },
-                0x1: {'name': 'AIN1', 'analog': 0.0 },
-                0x2: {'name': 'AIN2', 'analog': 0.0 },
-                0x3: {'name': 'AIN3', 'analog': 0.0 },
-                0x4: {'name': 'AIN4', 'analog': 0.0 },
-                0x5: {'name': 'AIN5', 'analog': 0.0 },
-                0x6: {'name': 'AIN6', 'analog': 0.0 },
-                0x7: {'name': 'AIN7', 'analog': 0.0 },
-            }
+            'muxSel': 0x1,
         }
+        #8 Analog inputs 
+        self.ins = {
+                0x0: 'io',
+                0x1: 'unused1',
+                0x2: 'unused2',
+                0x3: 'unused3',
+                0x4: 'unused4',
+                0x5: 'unused5',
+                0x6: 'unused6',
+                0x7: 'power'
+        }
+        self.driver = None
         self.logger.debug("ADS8638 has been instantiated")
+
+    def setCfg(self, driver, data=[]):
+        self.driver = driver
+        self.sendBytes(data) 
         
     def setMux(self, muxSel):
         if self.validateMux(muxSel):
             self.states['muxSel'] = muxSel
-            aIn = random.uniform(self.rangeStart, self.rangeStop)
-            self.states.get('ins').get(muxSel)['analog'] = aIn
-            self.logger.debug("Random analog in = {:.4f}".format(aIn))
             self.logger.debug("ADS8638 settings updated muxSel={:#x} ({})".format(
-                muxSel, self.states.get('ins').get(muxSel).get('name')) )
+                muxSel, self.ins.get(muxSel) ))
             return True
         else:
             return False
@@ -57,6 +65,7 @@ class Ads8638(object):
         valid = True
         cond = [
                 muxVal < 0x0, #0x0 to 0x7 only
+                (muxVal > 0x0 and muxVal < 0x7), #0x0 and 0x7 only
                 muxVal > 0x7, #up to 8 AI selections in ADS8638
                 ]
         if any(cond): 
@@ -64,22 +73,35 @@ class Ads8638(object):
             self.logger.error("Invalid condition({}) with ({}) ".format(cond.index(True), muxVal))
         return valid
         
-    def readAdc(self):
-        muxSel = self.states.get('muxSel')
-        analogIn = self.states.get('ins').get(muxSel).get('analog')
-        digitalOut = int((analogIn - self.rangeStart)/self.rangeResolution)
-        if (digitalOut==self.rangeSteps):
-            self.logger.warning("Max count reached, scaling back by 0x1...")
-            digitalOut = self.rangeSteps -1
+    def readAdc(self, driver, muxSel):
+        #Set AIN
+        self.setMux(muxSel)
+        #Set Manual Cfg
+        self.driver = driver
+        lnib = (0x07 & self.states.get('muxSel'))
+        rnib = ((0x07 & self.RANGESEL) << 1) & (0x01 & self.TSENSESEL) 
+        lsb = (lnib << 4) & rnib
+        self.sendBytes([self.MANUALMODE, lsb])
+        #Read DigitalOut
+        msb, lsb = self.getBytes()
+        chByte = (0xF0 & msb) >> 4
+        digitalOut = (0x0F & msb) * 256 + lsb
         self.states['digOut'] = digitalOut
-        self.logger.debug("ADC analog in = {:.4f} for {}".format(analogIn, self.states.get('ins').get(muxSel).get('name')))
-        self.logger.debug("ADC digital out = {:#x} with {:.4f} resolution".format(digitalOut, self.rangeResolution))
-        return digitalOut
-    
+        self.logger.debug("ADC digital out = {:#x} from {:#x} resolution".format(digitalOut, chByte))
+        #Calc Vmeas
+        return (chByte, self.getVmeas())
+
+    def sendBytes(self, dBytes=[]):
+        addr, data = dBytes 
+        eff_addr = addr << 1
+        self.driver.cfg_write(self.CHIPSEL, [eff_addr, data], self.FREQUENCY) 
+
+    def getBytes(self):
+        result = self.driver.cfg_read(self.CHIPSEL, [0x00, 0x00], self.FREQUENCY) 
+        return result
+        
     def getVmeas(self):
         analogOut = self.states.get('digOut') * self.rangeResolution + self.rangeStart
         self.states['anaOut'] = analogOut
         self.logger.debug("Calculated Vmeas out {:.4f} for {:#x}".format(analogOut, self.states.get('digOut')))
         return self.states['anaOut']
-
-        

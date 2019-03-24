@@ -41,7 +41,7 @@ class Tests():
                 pinMeas.text = ''
                 for i, param in enumerate(tests):
                     self.pmu.setup(testType, mappedChannel, param)
-                    pinMeas.text += '{:.02f}'.format(self.pmu.getMeas())
+                    pinMeas.text += '{:.02f}'.format(self.pmu.getMeas(testType))
                     if i<len(tests)-1:
                         pinMeas.text += '|'
                 testResults.append(pinMeas)
