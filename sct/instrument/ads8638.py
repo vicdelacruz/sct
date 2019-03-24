@@ -36,14 +36,14 @@ class Ads8638(object):
         }
         #8 Analog inputs 
         self.ins = {
-                0x0: 'io',
-                0x1: 'unused1',
-                0x2: 'unused2',
-                0x3: 'unused3',
-                0x4: 'unused4',
-                0x5: 'unused5',
-                0x6: 'unused6',
-                0x7: 'power'
+            0x0: 'io',
+            0x1: 'unused1',
+            0x2: 'unused2',
+            0x3: 'unused3',
+            0x4: 'unused4',
+            0x5: 'unused5',
+            0x6: 'unused6',
+            0x7: 'power'
         }
         self.driver = None
         self.logger.debug("ADS8638 has been instantiated")

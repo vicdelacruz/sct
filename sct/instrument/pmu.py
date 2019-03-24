@@ -50,6 +50,8 @@ class Pmu:
         self.setConfig(self.ads8638, [0x11, 0x22]) #Range 010
         self.setConfig(self.ads8638, [0x12, 0x22]) #Range 010
         self.setConfig(self.ads8638, [0x13, 0x22]) #Range 010
+        #Max5322 - TODO: do we need this?
+        self.setConfig(self.mc33996, [0x00, 0x00, 0x00]) #All out OFF
 
     def setup(self, testType, singleChannel, singleParam):
         self.states.get(testType)['pinSelect'] = singleChannel

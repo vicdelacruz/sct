@@ -51,11 +51,10 @@ class Driver:
         GPIO.output(self.gpioCfg.gpio_list, GPIO.HIGH)
 
     def setCE(self, port):
-        newPort = self.sanitize(port)
         if port in self.gpioCfg.gpio_list:
-            GPIO.output(newPort, GPIO.LOW)
+            GPIO.output(port, GPIO.LOW)
         else:
-            self.logger.error("GPIO port {} not found in GpioList {}...".format(newPort, self.gpioCfg.gpio_list))
+            self.logger.error("GPIO port {} not found in GpioList {}...".format(port, self.gpioCfg.gpio_list))
 
     def unsetCE(self):
         GPIO.output(self.gpioCfg.gpio_list, GPIO.HIGH)
@@ -78,23 +77,23 @@ class Driver:
         self.spi.close()
         self.unsetCE()
 
-    def cfg_write(self, cs, data, speed=125000000):
-        hbyte, lbyte = self.sanitize(data)
+    def cfg_write(self, cs, data, speed=125000000, mode=0b00):
+        self.logger.debug("SPI sending [{}] to dev 0x{} @ {:.2E}Hz".format(', '.join(hex(x) for x in data), cs, speed))
         self.open(cs)
         self.spi.max_speed_hz = speed
-        result = self.spi.xfer2([hbyte, lbyte])
+        self.spi.mode = mode 
+        result = self.spi.xfer2(data)
         self.close()
-        self.logger.info("SPI sent 0x%x 0x%x to dev 0x%x @ %.3E Hz" % (hbyte, lbyte, cs, speed))
         return result
 
     def cfg_read(self, cs, data, speed=125000000):
-        hbyte, lbyte = self.sanitize(data)
+        hbyte, lbyte = data
         self.open(cs)
         self.spi.max_speed_hz = speed
         result = self.spi.xfer2([hbyte, lbyte])
         self.close()
         msb, lsb = result
-        self.logger.info("SPI received 0x%x 0x%x from dev 0x%x @ %.3E Hz" % (msb, lsb, cs, speed))
+        self.logger.debug("SPI received [0x{}, 0x{}] from dev 0x{} @ {:.3E} Hz".format(msb, lsb, cs, speed))
         return result
 
     def sanitize(self, data):
@@ -102,12 +101,6 @@ class Driver:
             return data
         else:
             return([data])
-
-    def setCfg(self, attr, value):
-        if not hasattr(self, attr):
-            raise AttributeError("config has no setting %s" % attr)
-        else:
-            setattr(self, attr, value)
 
     def cleanup(self):
         try:

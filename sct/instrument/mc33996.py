@@ -6,6 +6,7 @@ Created on Oct 16, 2018
 import os
 import signal
 from sct.logger.sctLogger import SctLogger
+from sct.spi.spiDriver import Driver
 
 class Mc33996(object):
     '''
@@ -14,42 +15,55 @@ class Mc33996(object):
     logger = SctLogger().getLogger(__name__)
     validTypes = ['power']
 
+    CHIPSEL = 0x3 #Device #3
+    FREQUENCY = 1000000 # 1MHz baud rate 
+    MODE = 0b01 #CPOL=0 (PositiveEdge Clk)
+                #CPHA=1 (DataLatch on ClkFall)
+
     def __init__(self):
         '''
         Default settings
         '''
         self.states = {
-            'ins': {
-                0x0: {'name': 'OUT0' },  #VDD0
-                0x1: {'name': 'OUT1' },  #VDD1
-                0x2: {'name': 'OUT2' },  #VDD2
-                0x3: {'name': 'OUT3' },  #VDD3
-                0x4: {'name': 'OUT4' },  #VDD4
-                0x5: {'name': 'OUT5' },  #VDD5
-                0x6: {'name': 'OUT6' },  #VDD6
-                0x7: {'name': 'OUT7' },  #VDD7
-                0x8: {'name': 'OUT8' },  #VDD8
-                0x9: {'name': 'OUT9' },  #VDD9
-                0xA: {'name': 'OUT10' }, #VDD10
-                0xB: {'name': 'OUT11' }, #VDD11
-                0xC: {'name': 'OUT12' }, #VDD12
-                0xD: {'name': 'OUT13' }, #VDD13
-                0xE: {'name': 'OUT14' }, #VDD14
-                0xF: {'name': 'OUT15' }, #VDD15
-            },
             #Controls - 16 bits, independent, one-hot encoding, output only
             'relay': 0b_0000_0000_0000_0000
         }
+        self.ins = {
+            0x0: 'OUT1',  #VDD1
+            0x1: 'OUT2',  #VDD2
+            0x2: 'OUT3',  #VDD3
+            0x3: 'OUT4',  #VDD4
+            0x4: 'OUT5',  #VDD5
+            0x5: 'OUT6',  #VDD6
+            0x6: 'OUT7',  #VDD7
+            0x7: 'OUT8',  #VDD8
+            0x8: 'OUT9',  #VDD9
+            0x9: 'OUT10', #VDD10
+            0xA: 'OUT11', #VDD11
+            0xB: 'OUT12', #VDD12
+            0xC: 'OUT13', #VDD13
+            0xD: 'OUT14', #VDD14
+            0xE: 'OUT15', #VDD15
+            0xF: 'OUT16', #VDD16
+        }
+        self.driver = None
         self.logger.debug("MC33996 has been instantiated")
+
+    def setCfg(self, driver, data=[]):
+        self.driver = driver
+        self.sendBytes(data) 
         
     def selectPort(self, chType, portSel):
         if chType in self.validTypes: 
             if self.validateBits(portSel):
                 relaySel = portSel & 0b_1111_1111_1111_1111
                 self.states['relay'] = relaySel
-                i = '{:016b}'.format(relaySel)[::-1].index('1')
+                i = "{:016b}".format(relaySel)[::-1].index('1')
                 self.logger.debug("MC33996 settings updated relay={:#x} or {}".format(
-                    relaySel, self.states.get('ins').get(i).get('name')))
+                    relaySel, self.ins.get(i)))
+                msb = (relaySel & 0xFF00) >> 8
+                lsb = relaySel & 0xFF
+                self.sendBytes([0x00, msb, lsb])
                 return True
             else:
                 self.logger.exception("Bit validation failed, shutting down...")
@@ -58,7 +72,9 @@ class Mc33996(object):
         else:
             self.logger.debug("Type {} is not in {}, skipping...".format(chType, self.validTypes))
             return True
-            
+
+    def sendBytes(self, data):
+        self.driver.cfg_write(self.CHIPSEL, data, self.FREQUENCY, self.MODE) 
         
     def validateBits(self, portSel):
         valid = True
