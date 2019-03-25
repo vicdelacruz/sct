@@ -71,9 +71,21 @@ class Max7301:
         self.driver = None
         self.logger.debug("MAX7301 has been instantiated")
 
-    def setCfg(self, driver, data=[]):
+    def initCfg(self, driver):
         self.driver = driver
-        self.sendBytes(data) 
+        #Max7301 port controllers
+        self.sendBytes([0x04, 0x01]) #Normal operation
+        self.sendBytes([0x09, 0x55]) #Output ports
+        self.sendBytes([0x0A, 0x55]) #Output ports
+        self.sendBytes([0x0B, 0x55]) #Output ports
+        self.sendBytes([0x0C, 0x55]) #Output ports
+        self.sendBytes([0x0D, 0x55]) #Output ports
+        self.sendBytes([0x0E, 0x55]) #Output ports
+        self.sendBytes([0x0F, 0x55]) #Output ports
+        #Active low row_enables
+        self.sendBytes([0x2E, 0x01]) #RE[0] high
+        self.sendBytes([0x2F, 0x01]) #RE[1] high
+        self.sendBytes([0x30, 0x01]) #RE[2] high
 
     def setPorts(self, chType, channelMap, controls):
         ctrl =  controls & 0b111111111111111

@@ -48,9 +48,16 @@ class Ads8638(object):
         self.driver = None
         self.logger.debug("ADS8638 has been instantiated")
 
-    def setCfg(self, driver, data=[]):
+    def initCfg(self, driver):
         self.driver = driver
-        self.sendBytes(data) 
+        #Ads8638 ADC voltage measure
+        self.sendBytes([0x01, 0x00]) #Reset disable
+        self.sendBytes([0x06, 0x0C]) #AL_PD=1, IntVREF=1, TempSense=0
+        self.sendBytes([0x0C, 0x80]) #Automode on Ch0 and Ch7 only
+        self.sendBytes([0x10, 0x22]) #Range 010
+        self.sendBytes([0x11, 0x22]) #Range 010
+        self.sendBytes([0x12, 0x22]) #Range 010
+        self.sendBytes([0x13, 0x22]) #Range 010
         
     def setMux(self, muxSel):
         if self.validateMux(muxSel):
@@ -73,11 +80,10 @@ class Ads8638(object):
             self.logger.error("Invalid condition({}) with ({}) ".format(cond.index(True), muxVal))
         return valid
         
-    def readAdc(self, driver, muxSel):
+    def readAdc(self, muxSel):
         #Set AIN
         self.setMux(muxSel)
         #Set Manual Cfg
-        self.driver = driver
         lnib = (0x07 & self.states.get('muxSel'))
         rnib = ((0x07 & self.RANGESEL) << 1) & (0x01 & self.TSENSESEL) 
         lsb = (lnib << 4) & rnib

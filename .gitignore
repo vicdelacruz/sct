@@ -110,4 +110,4 @@ ENV/
 .pydevproject
 
 #SCT
-.log.*
+Sct.log.*

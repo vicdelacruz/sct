@@ -49,9 +49,10 @@ class Mc33996(object):
         self.driver = None
         self.logger.debug("MC33996 has been instantiated")
 
-    def setCfg(self, driver, data=[]):
+    def initCfg(self, driver):
         self.driver = driver
-        self.sendBytes(data) 
+        #MC33996 power relay mux
+        self.sendBytes([0x00, 0x00, 0x00]) #All out OFF
 
     def selectPort(self, chType, portSel):
         if chType in self.validTypes: 

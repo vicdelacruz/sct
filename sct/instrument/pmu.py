@@ -40,32 +40,16 @@ class Pmu:
     def initDevices(self):
         self.driver.spiCfg.printVals()
         self.driver.gpioCfg.printVals()
-        #Max7301 port controllers
-        self.setConfig(self.max7301, [0x04, 0x01]) #Normal operation
-        self.setConfig(self.max7301, [0x09, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0A, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0B, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0C, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0D, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0E, 0x55]) #Output ports
-        self.setConfig(self.max7301, [0x0F, 0x55]) #Output ports
-        #Max5322 DAC voltage driver
-        self.setConfig(self.max5322, [0xB0, 0x00]) #Shutdown both DACs
-        #Ads8638 ADC voltage measure
-        self.setConfig(self.ads8638, [0x01, 0x00]) #Reset disable
-        self.setConfig(self.ads8638, [0x06, 0x0C]) #AL_PD=1, IntVREF=1, TempSense=0
-        self.setConfig(self.ads8638, [0x0C, 0x80]) #Automode on Ch0 and Ch7 only
-        self.setConfig(self.ads8638, [0x10, 0x22]) #Range 010
-        self.setConfig(self.ads8638, [0x11, 0x22]) #Range 010
-        self.setConfig(self.ads8638, [0x12, 0x22]) #Range 010
-        self.setConfig(self.ads8638, [0x13, 0x22]) #Range 010
-        #MC33996 power relay mux
-        self.setConfig(self.mc33996, [0x00, 0x00, 0x00]) #All out OFF
+        self.initConfig(self.max7301) #Max7301 port controllers
+        self.initConfig(self.max5322) #Max5322 DAC voltage driver
+        self.initConfig(self.ads8638) #Ads8638 ADC voltage measure
+        self.initConfig(self.mc33996) #MC33996 power relay mux
 
     def setup(self, testType, singleChannel, singleParam):
-        self.states.get(testType)['pinSelect'] = singleChannel
-        self.setMax7301(testType, singleChannel, 0x401)
-        self.setMc33996(testType, singleChannel)
+        if self.states.get(testType).get('pinSelect') != singleChannel:
+            self.states.get(testType)['pinSelect'] = singleChannel
+            self.setMax7301(testType, singleChannel, 0x401)
+            self.setMc33996(testType, singleChannel)
         self.setMax5322(testType, singleParam)
         self.logger.debug("Pmu tests type {} for channel {} at setpoint={}...".format(
             testType, singleChannel, singleParam))
@@ -77,22 +61,21 @@ class Pmu:
         self.logger.debug("ChByte: {} ADCOut: {} for Mux Sel: {}...".format(chByte, result, muxSel))
         return result
 
-    def setConfig(self, component, data):
+    def initConfig(self, component):
         try:
-            component.setCfg(self.driver, data)
+            component.initCfg(self.driver)
         except ValueError as e:
-            self.logger.exception("Unable to configure {} with data:{}...", component, data)
+            self.logger.exception("Unable to init {} ...", component)
 
     def setMax5322(self, testType, singleParam):
         try:
-            self.setConfig(self.max5322, [0xE0, 0x00]) #Power-up both DACs
-            self.max5322.setIForce(self.driver, testType, singleParam)
+            self.max5322.setIForce(testType, singleParam)
         except ValueError as e:
             self.logger.exception("Set Max5322 unsuccessful: {}...", e)
 
     def resetMax5322(self):
         try:
-            self.setConfig(self.max5322, [0xB0, 0x00]) #Shutdown both DACs
+            self.max5322.resetIForce()
         except ValueError as e:
             self.logger.exception("Reset Max5322 unsuccessful: {}...", e)
 
@@ -104,7 +87,7 @@ class Pmu:
                         
     def getAds8638(self, muxVal):
         try:
-            result = self.ads8638.readAdc(self.driver, muxVal)
+            result = self.ads8638.readAdc(muxVal)
             return result
         except ValueError as e:
             self.logger.exception("Get ADS8638 unsuccessful: {}...", e)
