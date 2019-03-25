@@ -52,7 +52,7 @@ class Mc33996(object):
     def setCfg(self, driver, data=[]):
         self.driver = driver
         self.sendBytes(data) 
-        
+
     def selectPort(self, chType, portSel):
         if chType in self.validTypes: 
             if self.validateBits(portSel):
@@ -75,7 +75,7 @@ class Mc33996(object):
 
     def sendBytes(self, data):
         self.driver.cfg_write(self.CHIPSEL, data, self.FREQUENCY, self.MODE) 
-        
+
     def validateBits(self, portSel):
         valid = True
         cond = [
@@ -87,5 +87,3 @@ class Mc33996(object):
             valid = False
             self.logger.error("Invalid condition({}) with ({:#x}) ".format(cond.index(True), portSel))
         return valid
-        
-        

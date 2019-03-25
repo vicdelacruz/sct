@@ -87,7 +87,7 @@ class Ads8638(object):
         chByte = (0xF0 & msb) >> 4
         digitalOut = (0x0F & msb) * 256 + lsb
         self.states['digOut'] = digitalOut
-        self.logger.debug("ADC digital out = {:#x} from {:#x} resolution".format(digitalOut, chByte))
+        self.logger.debug("ADC digital out = {:#x} from port {:#x}".format(digitalOut, chByte))
         #Calc Vmeas
         return (chByte, self.getVmeas())
 

@@ -40,9 +40,18 @@ class Pmu:
     def initDevices(self):
         self.driver.spiCfg.printVals()
         self.driver.gpioCfg.printVals()
-        #Max5322 - TODO: do we need this?
-        self.setConfig(self.max5322, [0xE0, 0x00]) #Power up both DACs
-        #Ads8638
+        #Max7301 port controllers
+        self.setConfig(self.max7301, [0x04, 0x01]) #Normal operation
+        self.setConfig(self.max7301, [0x09, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0A, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0B, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0C, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0D, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0E, 0x55]) #Output ports
+        self.setConfig(self.max7301, [0x0F, 0x55]) #Output ports
+        #Max5322 DAC voltage driver
+        self.setConfig(self.max5322, [0xB0, 0x00]) #Shutdown both DACs
+        #Ads8638 ADC voltage measure
         self.setConfig(self.ads8638, [0x01, 0x00]) #Reset disable
         self.setConfig(self.ads8638, [0x06, 0x0C]) #AL_PD=1, IntVREF=1, TempSense=0
         self.setConfig(self.ads8638, [0x0C, 0x80]) #Automode on Ch0 and Ch7 only
@@ -50,20 +59,21 @@ class Pmu:
         self.setConfig(self.ads8638, [0x11, 0x22]) #Range 010
         self.setConfig(self.ads8638, [0x12, 0x22]) #Range 010
         self.setConfig(self.ads8638, [0x13, 0x22]) #Range 010
-        #Max5322 - TODO: do we need this?
+        #MC33996 power relay mux
         self.setConfig(self.mc33996, [0x00, 0x00, 0x00]) #All out OFF
 
     def setup(self, testType, singleChannel, singleParam):
         self.states.get(testType)['pinSelect'] = singleChannel
-        self.setMax5322(testType, singleParam)
         self.setMax7301(testType, singleChannel, 0x401)
         self.setMc33996(testType, singleChannel)
+        self.setMax5322(testType, singleParam)
         self.logger.debug("Pmu tests type {} for channel {} at setpoint={}...".format(
             testType, singleChannel, singleParam))
 
     def getMeas(self, testType):
         muxSel = self.states.get(testType).get('adcChannel')
         (chByte, result) = self.getAds8638(muxSel)
+        self.resetMax5322() #Prevent hot-switching
         self.logger.debug("ChByte: {} ADCOut: {} for Mux Sel: {}...".format(chByte, result, muxSel))
         return result
 
@@ -75,9 +85,16 @@ class Pmu:
 
     def setMax5322(self, testType, singleParam):
         try:
+            self.setConfig(self.max5322, [0xE0, 0x00]) #Power-up both DACs
             self.max5322.setIForce(self.driver, testType, singleParam)
         except ValueError as e:
             self.logger.exception("Set Max5322 unsuccessful: {}...", e)
+
+    def resetMax5322(self):
+        try:
+            self.setConfig(self.max5322, [0xB0, 0x00]) #Shutdown both DACs
+        except ValueError as e:
+            self.logger.exception("Reset Max5322 unsuccessful: {}...", e)
 
     def setMax7301(self, testType, channelSelect, ctrl):
         try:

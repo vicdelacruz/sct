@@ -6,14 +6,17 @@ Created on Oct 16, 2018
 import os
 import signal
 from sct.logger.sctLogger import SctLogger
+from sct.spi.spiDriver import Driver
 
-class Max7301(object):
+class Max7301:
     '''
     Models the Max7301 port states in the SCT board
     '''
     logger = SctLogger().getLogger(__name__)
     validTypes = ['io']
 
+    CHIPSEL = 0x0 #Device #0
+    FREQUENCY = 1000000 # 1MHz baud rate 
 
     def __init__(self):
         '''
@@ -60,21 +63,34 @@ class Max7301(object):
             #P31 <=> ctrl_14 
             'ctrl': 0b_000_0000_0000_0000
         }
+        self.regs = {
+            'ls': [0x24, 0x25, 0x26, 0x27, 0x28],
+            'cs': [0x29, 0x2A, 0x2B, 0x2C, 0x2D],
+            're': [0x2E, 0x2F, 0x30]
+        }
+        self.driver = None
         self.logger.debug("MAX7301 has been instantiated")
-        
+
+    def setCfg(self, driver, data=[]):
+        self.driver = driver
+        self.sendBytes(data) 
+
     def setPorts(self, chType, channelMap, controls):
-        ctrl =  controls & 0b_111_1111_1111_1111
+        ctrl =  controls & 0b111111111111111
         if chType in self.validTypes:
             channel = int(channelMap)
-            ls =    channel & 0b_1_1111
-            cs =    channel>>5 & 0b_1_1111
+            ls =    channel & 0b11111
+            cs =    channel>>5 & 0b11111
             re =    channel>>10 & 0b111
             if self.validateBits(ls, cs, re, ctrl):
                 self.states['ls'] = ls
+                self.setMux('ls', ls)
                 self.states['cs'] = cs
+                self.setMux('cs', cs)
                 self.states['re'] = re
+                self.setMux('re', re, False)
                 self.states['ctrl'] = ctrl
-                self.logger.debug("MAX7301 settings updated ls={:02d}, cs={:02d}, re={:#05b}, ctrl={:#06x}".format(ls, cs, re, ctrl))
+                self.logger.debug("MAX7301 settings updated ls={:#02x}, cs={:#02x}, re={:#01x}, ctrl={:#06x}".format(ls, cs, re, ctrl))
                 return True
             else:
                 self.logger.exception("Bit validation failed, SCT is shutting down...")
@@ -83,6 +99,19 @@ class Max7301(object):
         else:
             self.logger.debug("Type {} is not in {}, skipping channel selection...".format(chType, self.validTypes))
             return True
+
+    def setMux(self, muxGroup, data, act_high=True):
+        self.logger.debug("MuxGroup: [{}], data {:X}".format(muxGroup, data))
+        for i in range(len(self.regs.get(muxGroup))):
+            tmp = data
+            if act_high:
+                lsb = (tmp >> i) & 0b1
+            else:
+                lsb = ((tmp >> i) ^ 0b1) & 0b1
+            self.sendBytes([self.regs.get(muxGroup)[i], lsb])
+
+    def sendBytes(self, data):
+        self.driver.cfg_write(self.CHIPSEL, data, self.FREQUENCY) 
                     
     def validateBits(self, ls, cs, re, ctrl):
         valid = True
