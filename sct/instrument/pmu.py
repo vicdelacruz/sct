@@ -31,8 +31,8 @@ class Pmu:
         self.mc33996 = Mc33996() #Power relay select
         self.meas = None
         self.states = {    
-            'io': { 'pinSelect': 0b_001_00000_00000, 'adcChannel': 0x0 },
-            'power': { 'pinSelect': 0b_0000_0000_0000_0001, 'adcChannel': 0x7 },
+            'io': 0b_111_00000_00000,
+            'power': 0b_0000_0000_0000_0000,
         }
         self.driver = Driver()
         self.initDevices()
@@ -46,19 +46,20 @@ class Pmu:
         self.initConfig(self.mc33996) #MC33996 power relay mux
 
     def setup(self, testType, singleChannel, singleParam):
-        if self.states.get(testType).get('pinSelect') != singleChannel:
-            self.states.get(testType)['pinSelect'] = singleChannel
+        if self.states.get(testType) != singleChannel:
+            if testType == 'power':
+                self.unsetMax5322() #Prevent hot-switching
+            self.states[testType] = singleChannel
             self.setMax7301(testType, singleChannel, 0x401)
             self.setMc33996(testType, singleChannel)
-        self.setMax5322(testType, singleParam)
+            self.setMax5322()
+        self.driveMax5322(testType, singleParam)
         self.logger.debug("Pmu tests type {} for channel {} at setpoint={}...".format(
             testType, singleChannel, singleParam))
 
     def getMeas(self, testType):
-        muxSel = self.states.get(testType).get('adcChannel')
-        (chByte, result) = self.getAds8638(muxSel)
-        self.resetMax5322() #Prevent hot-switching
-        self.logger.debug("ChByte: {} ADCOut: {} for Mux Sel: {}...".format(chByte, result, muxSel))
+        (chByte, result) = self.getAds8638(testType)
+        self.logger.debug("ChByte: {} ADCOut: {} for Type: {}...".format(chByte, result, testType))
         return result
 
     def initConfig(self, component):
@@ -67,15 +68,21 @@ class Pmu:
         except ValueError as e:
             self.logger.exception("Unable to init {} ...", component)
 
-    def setMax5322(self, testType, singleParam):
+    def setMax5322(self):
+        try:
+            self.max5322.setDAC()
+        except ValueError as e:
+            self.logger.exception("Set Max5322 unsuccessful: {}...", e)
+
+    def driveMax5322(self, testType, singleParam):
         try:
             self.max5322.setIForce(testType, singleParam)
         except ValueError as e:
             self.logger.exception("Set Max5322 unsuccessful: {}...", e)
 
-    def resetMax5322(self):
+    def unsetMax5322(self):
         try:
-            self.max5322.resetIForce()
+            self.max5322.unsetDAC()
         except ValueError as e:
             self.logger.exception("Reset Max5322 unsuccessful: {}...", e)
 
@@ -85,9 +92,9 @@ class Pmu:
         except ValueError as e:
             self.logger.exception("Set Max7301 unsuccessful: {}...", e)
                         
-    def getAds8638(self, muxVal):
+    def getAds8638(self, testType):
         try:
-            result = self.ads8638.readAdc(muxVal)
+            result = self.ads8638.readAdc(testType)
             return result
         except ValueError as e:
             self.logger.exception("Get ADS8638 unsuccessful: {}...", e)

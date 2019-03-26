@@ -2008,7 +2008,7 @@
 
   </TestSetup>
   <PinGroup name="48MXTAL" pintype="io">
-    <Pin name="X48M_X1" channel="1027"/>
+    <Pin name="X48M_X1" channel="1001"/>
     <Pin name="X48M_X2" channel="1028"/>
   </PinGroup>
 

@@ -45,7 +45,7 @@ class Max5322(object):
     def initCfg(self, driver):
         self.driver = driver
         #Max5322 DAC voltage driver
-        self.resetIForce()
+        self.unsetDAC()
 
     def setIForce(self, chType, current):
         current = float(current)
@@ -55,13 +55,16 @@ class Max5322(object):
             self.states.get(chType)['dac'] = dac
             self.states.get(chType)['force'] = force
             self.states.get(chType)['out'] =  out
-            self.logger.debug("MAX5322 settings updated force={:.4E}A, dac={:#05x}, out={:.4f}V".format(force, dac, out))
             self.sendBytes(chType) 
+            self.logger.debug("MAX5322 settings updated force={:.4E}A, dac={:#05x}, out={:.4f}V".format(force, dac, out))
             return True
         else: 
             return False
 
-    def resetIForce(self):
+    def setDAC(self):
+        self.sendBytes('cfg', [0xE0, 0x00]) #Power-up both DACs 
+
+    def unsetDAC(self):
         self.sendBytes('cfg', [0xB0, 0x00]) #Shutdown both DACs
 
     def sendBytes(self, chType, data=[0x00, 0x00]):
@@ -70,7 +73,6 @@ class Max5322(object):
         else:
             adc_msb = (self.states.get(chType)['dac'] >> 8) & 0x0F
             lsb = self.states.get(chType)['dac'] & 0xFF
-            self.driver.cfg_write(self.CHIPSEL, [0xE0, 0x00], self.FREQUENCY) #Power-up both DACs 
             if chType == 'io':
                 self.driver.cfg_write(self.CHIPSEL, [0x20|adc_msb, lsb], self.FREQUENCY) 
                 self.driver.cfg_write(self.CHIPSEL, [0x40|adc_msb, lsb], self.FREQUENCY) 

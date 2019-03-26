@@ -4,5 +4,6 @@ logDir = 'sct/repo/logs'
 testDir = 'tests'
 logLevel = 0
 logToFile = True
+logToConsole = False
 logFile = 'Sct.log'
 statusFile = 'Sct.state'

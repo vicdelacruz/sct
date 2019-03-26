@@ -45,14 +45,15 @@ class SctLogger(Singleton):
         formatter = logging.Formatter(
             "%(asctime)s.%(msecs)03d [%(levelname)-8s][%(name)-25s] %(message)s",
             "%Y-%m-%d %H:%M:%S")
-        stdHandler = logging.StreamHandler(sys.stdout)
-        stdHandler.setLevel(logging.DEBUG)
-        stdHandler.addFilter(lambda record: record.levelno <= logging.INFO)
-        stdHandler.setFormatter(formatter)
+        if (props.logToConsole):
+            stdHandler = logging.StreamHandler(sys.stdout)
+            stdHandler.setLevel(logging.DEBUG)
+            stdHandler.addFilter(lambda record: record.levelno <= logging.INFO)
+            stdHandler.setFormatter(formatter)
+            logger.addHandler(stdHandler)
         errHandler = logging.StreamHandler()
         errHandler.setLevel(logging.WARNING)
         errHandler.setFormatter(formatter)
-        logger.addHandler(stdHandler)
         logger.addHandler(errHandler)
         if (props.logToFile):
             fhandler = RotatingFileHandler(

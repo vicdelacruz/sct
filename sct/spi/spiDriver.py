@@ -78,10 +78,10 @@ class Driver:
         self.unsetCE()
 
     def cfg_write(self, cs, data, speed=125000000, mode=0b00):
-        self.logger.debug("SPI sending [{}] to dev 0x{} @ {:.2E}Hz".format(', '.join(hex(x) for x in data), cs, speed))
         self.open(cs)
         self.spi.max_speed_hz = speed
         self.spi.mode = mode 
+        self.logger.debug("SPI sending [{}] to dev 0x{} @ {:.2E}Hz".format(', '.join(hex(x) for x in data), cs, speed))
         result = self.spi.xfer2(data)
         self.close()
         return result
@@ -91,9 +91,9 @@ class Driver:
         self.open(cs)
         self.spi.max_speed_hz = speed
         result = self.spi.xfer2([hbyte, lbyte])
-        self.close()
         msb, lsb = result
-        self.logger.debug("SPI received [0x{}, 0x{}] from dev 0x{} @ {:.3E} Hz".format(msb, lsb, cs, speed))
+        self.logger.debug("SPI received [0x{:02x}, 0x{:02x}] from dev 0x{:x} @ {:.3E} Hz".format(msb, lsb, cs, speed))
+        self.close()
         return result
 
     def sanitize(self, data):
