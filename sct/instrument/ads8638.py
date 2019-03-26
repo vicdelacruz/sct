@@ -86,13 +86,13 @@ class Ads8638:
         self.setMux(testType)
         #Set Manual Cfg
         lnib = (0x07 & self.states.get('muxSel'))
-        rnib = ((0x07 & self.RANGESEL) << 1) + (0x01 & self.TSENSESEL) 
-        lsb = (lnib << 4) + rnib
+        rnib = ((0x07 & self.RANGESEL) << 1) | (0x01 & self.TSENSESEL) 
+        lsb = (lnib << 4) | rnib
         self.sendBytes([self.MANUALMODE, lsb])
         #Read DigitalOut
         msb, lsb = self.getBytes()
         chByte = (0xF0 & msb) >> 4
-        digitalOut = (0x0F & msb) * 256 + lsb
+        digitalOut = (0x0F & msb) << 8 | (lsb & 0xFF)
         self.states['digOut'] = digitalOut
         self.logger.debug("ADC digital out = {:#x} from port {:#x}".format(digitalOut, chByte))
         #Calc Vmeas
