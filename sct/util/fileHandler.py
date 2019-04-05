@@ -57,13 +57,19 @@ class FileHandler:
             
     def parseTp(self, fullpath):
         tp = Tp()
+        try:
         parsed = etree.parse(fullpath)
+        except Exception as e:
+            self.logger.error('Unable to parse %s: %s', fullpath, e)
+        try:
         if (parsed.getroot().tag == 'TestProgram'):
             tp.programtree = parsed
             self.logger.info('TestProgram %s pkg=%s ver=%s found', parsed.getroot().get("name"),
                              parsed.getroot().get("pkg"), parsed.getroot().get("ver"))
         else:
             self.logger.error('Invalid testprogram format in %s', fullpath)
+        except Exception as e:
+            self.logger.error('Unable to parse %s: %s', fullpath, e)
         return tp
 
     def logState(self, logPath=None, state=None):

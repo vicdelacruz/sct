@@ -30,11 +30,11 @@ class FrontController(object):
         self.status = Status()
         self.logger.debug('Front Controller is initialized...')
 
-    def monitor(self, cmdPath=None, logDir = None, testMode = False):
+    def monitor(self, progPath=None, cmdPath=None, logDir = None, testMode = False):
         self.status.updateState('waiting')
         self.logState()
         if testMode:
-            self.processCmds(self.fh.loadCmd(cmdPath), logDir)
+            self.processCmds(progPath, self.fh.loadCmd(cmdPath), logDir)
         else:
             while self.goState:
                 self.logger.debug("Polling for CMD file in %s", os.path.abspath(os.path.join(os.getcwd(), cmdPath)))
@@ -42,7 +42,7 @@ class FrontController(object):
                 time.sleep(10)
                 if os.path.exists(cmdPath):
                     self.logger.info('Front is loading CMD file...')
-                    self.processCmds(self.fh.loadCmd(cmdPath), logDir)
+                    self.processCmds(progPath, self.fh.loadCmd(cmdPath), logDir)
 
     def stop(self):
         self.logger.warning('SCT is shutting down...')
@@ -50,11 +50,11 @@ class FrontController(object):
         self.logState()
         self.goState = False
 
-    def processCmds(self, cmds, logDir):
+    def processCmds(self, progPath, cmds, logDir):
         for cmd in cmds:
             op = cmd.split()
             if op[0] == 'LOAD':
-                self.load(op[1])
+                self.load(progPath, op[1])
             elif op[0] == 'EXECUTE_ALL':
                 self.executeAll()
             elif op[0] == 'LOG_ALL':
@@ -66,11 +66,11 @@ class FrontController(object):
             else:
                 pass
         
-    def load(self, tpPath=None):
+    def load(self, tpPath=None, tpName=None):
         self.logger.info('Front is loading TP...')
         self.status.updateState('loading')
         self.logState()
-        self.tp = self.fh.loadTp(tpPath)
+        self.tp = self.fh.loadTp(os.path.join(tpPath,tpName))
         self.logger.debug(etree.tostring(self.tp.programtree))
         self.status.updateState('waiting')
         self.logState()

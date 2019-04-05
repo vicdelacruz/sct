@@ -1,8 +1,8 @@
-tpPath = 'sct/repo/TestProgram.xml'
-cmdPath = 'sct/repo/Sct.cmd'
-logDir = 'sct/repo/logs'
+tpPath = '/root/ngsct/receive'
+cmdPath = '/root/ngsct/receive/Sct.cmd'
+logDir = '/root/ngsct/send'
 testDir = 'tests'
-logLevel = 0
+logLevel = 1
 logToFile = True
 logToConsole = False
 logFile = 'Sct.log'

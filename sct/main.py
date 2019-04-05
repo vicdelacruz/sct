@@ -15,4 +15,4 @@ def sigHandler(sig, frame):
 if __name__ == '__main__':
     app = FrontController()
     signal.signal(signal.SIGINT, sigHandler)
-    app.monitor(props.cmdPath, props.logDir)
+    app.monitor(props.tpPath, props.cmdPath, props.logDir)

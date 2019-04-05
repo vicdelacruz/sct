@@ -21,8 +21,8 @@ class Ads8638:
     FREQUENCY = 1000000 # 1MHz baud rate 
     RANGESEL = 0b010 #Range Select
     TSENSESEL = 0b0 #Temp Sensor Select
-    MANUALMODE = 0x40 #Manual mode
-    AUTOMODE = 0x50 #Auto mode
+    MANUALMODE = 0x04 #Manual mode
+    AUTOMODE = 0x05 #Auto mode
 
     def __init__(self):
         '''
@@ -36,14 +36,14 @@ class Ads8638:
         }
         #8 Analog inputs 
         self.ins = {
-            'power'  : 0x0,
+            'unused0': 0x0,
             'unused1': 0x1,
-            'unused2': 0x2,
+            'power'  : 0x2,
             'unused3': 0x3,
             'unused4': 0x4,
-            'unused5': 0x5,
+            'io'     : 0x5,
             'unused6': 0x6,
-            'io'     : 0x7
+            'unused7': 0x7
         }
         self.driver = None
         self.logger.debug("ADS8638 has been instantiated")
@@ -73,7 +73,7 @@ class Ads8638:
         valid = True
         cond = [
                 muxVal < 0x0, #0x0 to 0x7 only
-                (muxVal > 0x0 and muxVal < 0x7), #0x0 and 0x7 only
+                (muxVal > 0x2 and muxVal < 0x5), #0x0 and 0x7 only
                 muxVal > 0x7, #up to 8 AI selections in ADS8638
                 ]
         if any(cond): 
@@ -90,6 +90,7 @@ class Ads8638:
         lsb = (lnib << 4) | rnib
         self.sendBytes([self.MANUALMODE, lsb])
         #Read DigitalOut
+        msb, lsb = self.getBytes()
         msb, lsb = self.getBytes()
         chByte = (0xF0 & msb) >> 4
         digitalOut = (0x0F & msb) << 8 | (lsb & 0xFF)
