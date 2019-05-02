@@ -61,11 +61,11 @@ class Driver:
 
     def open(self, cs):
         if cs == 0:
-            self.logger.debug("Opening SPI 0,0...")
+            #self.logger.debug("Opening SPI 0,0...")
             self.spi.open(0, 0)
             self.initSpi(self.spiCfg)
         elif (cs > 0 and cs < 4):
-            self.logger.debug("Opening SPI 0,1 with CE {}...".format(cs-1))
+            #self.logger.debug("Opening SPI 0,1 with CE {}...".format(cs-1))
             self.setCE(self.gpioCfg.gpio_list[cs-1])
             self.spi.open(0, 1)
             self.initSpi(self.spiCfg)
@@ -73,7 +73,7 @@ class Driver:
             self.logger.error("CS #{} not valid...".format(cs))
 
     def close(self):
-        self.logger.debug("Closing SPI and resetting CE's...")
+        #self.logger.debug("Closing SPI and resetting CE's...")
         self.spi.close()
         self.unsetCE()
 
