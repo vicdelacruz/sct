@@ -39,9 +39,12 @@ class Tests():
                 self.logger.debug('Getting result for pin {} on channel {:s}...'.format(pinName, ch))
                 pinMeas = etree.Element('Pin', name=pinName)
                 pinMeas.text = ''
-                for i, param in enumerate(tests):
+                testDelay = tests.get('delay')
+                sampleCount = tests.get('samples')
+                self.logger.debug('From tp, delay: {}, samples: {}...'.format(testDelay, sampleCount))
+                for i, param in enumerate(tests.get('forceValues')):
                     self.pmu.setup(testType, mappedChannel, param)
-                    pinMeas.text += '{:.02f}'.format(self.pmu.getMeas(testType))
+                    pinMeas.text += '{:.02f}'.format(self.pmu.getMeas(testType, testDelay, sampleCount))
                     if i<len(tests)-1:
                         pinMeas.text += '|'
                 testResults.append(pinMeas)

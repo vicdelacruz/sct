@@ -57,9 +57,9 @@ class Pmu:
         self.logger.debug("Pmu tests type {} for channel {} at setpoint={}...".format(
             testType, singleChannel, singleParam))
 
-    def getMeas(self, testType):
-        (chByte, result) = self.getAds8638(testType)
-        self.logger.debug("ChByte: {} ADCOut: {} for Type: {}...".format(chByte, result, testType))
+    def getMeas(self, testType, testDelay, sampleCount):
+        (chByte, result) = self.getAds8638(testType, testDelay, sampleCount)
+        self.logger.debug("ChByte: {} ADCOut: {} for Type: {} delay: {} samples: {}...".format(chByte, result, testType, testDelay, sampleCount))
         return result
 
     def initConfig(self, component):
@@ -92,9 +92,9 @@ class Pmu:
         except ValueError as e:
             self.logger.exception("Set Max7301 unsuccessful: {}...", e)
                         
-    def getAds8638(self, testType):
+    def getAds8638(self, testType, testDelay, sampleCount):
         try:
-            result = self.ads8638.readAdc(testType)
+            result = self.ads8638.readAdc(testType, testDelay, sampleCount)
             return result
         except ValueError as e:
             self.logger.exception("Get ADS8638 unsuccessful: {}...", e)

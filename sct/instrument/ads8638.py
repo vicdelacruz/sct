@@ -88,16 +88,20 @@ class Ads8638:
             self.logger.error("Invalid condition({}) with ({}) ".format(cond.index(True), muxVal))
         return valid
         
-    def readAdc(self, testType):
+    def readAdc(self, testType, testDelay=None, sampleCount=None):
+        if testDelay is None:
+            testDelay = self.SAMPLE_DELAY
+        if sampleCount is None:
+            sampleCount = self.SAMPLE_SIZE
         #Set AIN
         self.setMux(testType)
         cmd = self.setupCommand('MANUAL',testType) 
         self.sendBytes(cmd)
-        time.sleep(self.SAMPLE_DELAY)
+        time.sleep(testDelay)
         self.sendBytes() #16 SCKs for acquisition
         #Read DigitalOut
         digitalSamples = []
-        for i in range(self.SAMPLE_SIZE):
+        for i in range(sampleCount):
             msb, lsb = self.getBytes()
             chByte = (0xF0 & msb) >> 4
             digitalOut = (0x0F & msb) << 8 | (lsb & 0xFF)

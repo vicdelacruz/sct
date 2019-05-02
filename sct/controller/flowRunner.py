@@ -31,13 +31,18 @@ class FlowRunner():
         for element in self.tp.programtree.iter():
             self.logger.debug('{} : {}'.format(element.tag, element.attrib))
             if (element.tag == 'DataPoints'):
-                self.tests[element.get('pingroup')] = []
+                self.tests[element.get('pingroup')] = { 'forceValues': [] }
+                if 'delay' in element.attrib: 
+                    self.tests[element.get('pingroup')]['delay'] = float(element.get('delay'))
+                if 'samples' in element.attrib: 
+                    self.tests[element.get('pingroup')]['samples'] = int(element.get('samples'))
             elif (element.tag == 'ForcedValue'):
-                self.tests[element.getparent().get('pingroup')].append(element.get('set'))
+                self.tests[element.getparent().get('pingroup')].get('forceValues').append(element.get('set'))
             elif (element.tag == 'PinGroup'):
                 self.pingroups[element.get("pintype")].update({element.get("name"): {} })
             elif (element.tag == 'Pin' and element.getparent().tag == 'PinGroup'):
-                self.pingroups[element.getparent().get('pintype')].get(element.getparent().get('name')).update({element.get('channel'): element.get('name')})
+                self.pingroups[element.getparent().get('pintype')].get(element.getparent().get('name')).update(
+                    {element.get('channel'): element.get('name')})
         self.logger.debug('Parsed tests: {}'.format(self.tests))
         self.logger.debug('Parsed pingroups: {}'.format(self.pingroups))
         self.testController.pinMap = self.pingroups
@@ -67,7 +72,7 @@ class FlowRunner():
     def executeGroup(self, testType, testPoints, testGroup, pinGroup):
         testResults = etree.Element('Results', name=testGroup, pintype=testType)
         forcedValue = etree.SubElement(testResults, 'ForcedValue')
-        forcedValue.text = '|'.join(testPoints)   
+        forcedValue.text = '|'.join(testPoints.get('forceValues'))   
         pinResults = self.testController.getGroupResults(testType, 
             testPoints, testGroup, pinGroup)
         for pinResult in pinResults.getchildren():
@@ -85,12 +90,3 @@ class FlowRunner():
             singleResult.append(self.testController.getPinResults(params, pin))
             self.logger.debug('Single result: %s', etree.tostring(singleResult))
         return singleResult
-
-#    def testSpi(self):
-        #driver.cfg_write(0x1, [0xbe, 0xef], 100000) 
-        #driver.cfg_write(0x2, [0xff, 0x00]) 
-        #driver.cfg_write(0x3, [0x55, 0xaa], 1000000) 
-        #ch, adcout = driver.adc_read([0x05, 0x04]) 
-        #self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))
-        #ch, adcout = driver.adc_read([0x05, 0x04], 100000) 
-        #self.logger.info("ADC read 0x%x from 0x%x" % (adcout, ch))

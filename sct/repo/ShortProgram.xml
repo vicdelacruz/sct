@@ -1,7 +1,7 @@
 <TestProgram name="Raven1" opn="YM2200C4T2OFB" pkg="FP5" ver="0.1.2018.1025">
 	<TestSetup>
 
-    <DataPoints pingroup="48MXTAL">
+    <DataPoints pingroup="48MXTAL" delay="0.002" samples="5">
       <ForcedValue set="-0.0003992"/>
       <ForcedValue set="-0.0003984"/>
       <ForcedValue set="-0.0003976"/>
@@ -1003,7 +1003,7 @@
       <ForcedValue set="3.99200000000006E-04"/>
       <ForcedValue set="4.00000000000000E-04"/>
     </DataPoints>
-    <DataPoints pingroup="VDIOMEM">
+    <DataPoints pingroup="VDIOMEM" delay="0.05" samples="5">
       <ForcedValue set="-0.01996"/>
       <ForcedValue set="-0.01992"/>
       <ForcedValue set="-0.01988"/>
