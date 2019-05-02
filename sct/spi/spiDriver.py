@@ -4,8 +4,13 @@ Created on 22 Sep 2018
 @author: BIKOYPOGI
 '''
 import sys, signal
-from spidev import SpiDev
-import RPi.GPIO as GPIO
+try:
+    from spidev import SpiDev
+    import RPi.GPIO as GPIO
+except ImportError:
+    from unittest.mock import MagicMock
+    SpiDev = MagicMock()
+    GPIO = MagicMock()
 from sct.spi.spiConfig import SpiConfig
 from sct.spi.gpioConfig import GpioConfig
 from sct.logger.sctLogger import SctLogger
@@ -91,6 +96,8 @@ class Driver:
         self.open(cs)
         self.spi.max_speed_hz = speed
         result = self.spi.xfer2([hbyte, lbyte])
+        if isinstance(SpiDev, MagicMock):
+            result = [0x00, 0x00]
         msb, lsb = result
         self.logger.debug("SPI received [0x{:02x}, 0x{:02x}] from dev 0x{:x} @ {:.3E} Hz".format(msb, lsb, cs, speed))
         self.close()

@@ -1,4 +1,8 @@
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    from unittest.mock import MagicMock
+    GPIO = MagicMock()
 from sct.logger.sctLogger import SctLogger
 
 

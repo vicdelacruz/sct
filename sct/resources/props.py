@@ -1,6 +1,6 @@
-tpPath = '/root/ngsct/receive'
-cmdPath = '/root/ngsct/receive/Sct.cmd'
-logDir = '/root/ngsct/send'
+tpPath = '../receive'
+cmdPath = '../receive/Sct.cmd'
+logDir = '../send'
 testDir = 'tests'
 logLevel = 1
 logToFile = True

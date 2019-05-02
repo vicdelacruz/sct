@@ -98,9 +98,9 @@ class Ads8638:
         #Read DigitalOut
         digitalSamples = []
         for i in range(self.SAMPLE_SIZE):
-        msb, lsb = self.getBytes()
-        chByte = (0xF0 & msb) >> 4
-        digitalOut = (0x0F & msb) << 8 | (lsb & 0xFF)
+            msb, lsb = self.getBytes()
+            chByte = (0xF0 & msb) >> 4
+            digitalOut = (0x0F & msb) << 8 | (lsb & 0xFF)
             digitalSamples.append(digitalOut)
         #self.logger.warning("Digital samples: {}".format(digitalSamples))
         finalDigitalOut = self.filterOutlier(digitalSamples)
@@ -138,7 +138,7 @@ class Ads8638:
         eff_addr = addr << 1
         result = self.driver.cfg_read(self.CHIPSEL, [eff_addr, data], self.FREQUENCY) 
         return result
-        
+
     def getVmeas(self):
         analogOut = self.states.get('digOut') * self.rangeResolution + self.rangeStart
         self.states['anaOut'] = analogOut

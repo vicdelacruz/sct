@@ -1,5 +1,9 @@
 from sct.logger.sctLogger import SctLogger
-from spidev import SpiDev
+try:
+    from spidev import SpiDev
+except ImportError:
+    from unittest.mock import MagicMock
+    SpiDev = MagicMock()
 
 class SpiConfig:
     logger = SctLogger().getLogger(__name__)
