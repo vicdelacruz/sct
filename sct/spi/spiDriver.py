@@ -4,11 +4,11 @@ Created on 22 Sep 2018
 @author: BIKOYPOGI
 '''
 import sys, signal
+from unittest.mock import MagicMock
 try:
     from spidev import SpiDev
     import RPi.GPIO as GPIO
 except ImportError:
-    from unittest.mock import MagicMock
     SpiDev = MagicMock()
     GPIO = MagicMock()
 from sct.spi.spiConfig import SpiConfig

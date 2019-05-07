@@ -45,7 +45,7 @@ class Tests():
                 for i, param in enumerate(tests.get('forceValues')):
                     self.pmu.setup(testType, mappedChannel, param)
                     pinMeas.text += '{:.02f}'.format(self.pmu.getMeas(testType, testDelay, sampleCount))
-                    if i<len(tests)-1:
+                    if i<len(tests.get('forceValues'))-1:
                         pinMeas.text += '|'
                 testResults.append(pinMeas)
         self.logger.debug(etree.tostring(testResults))
